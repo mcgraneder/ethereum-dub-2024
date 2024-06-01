@@ -1,2 +1,1 @@
-const x = 5
-export default x
+export { SmartWalletRouter } from './SmartWalletRouter'

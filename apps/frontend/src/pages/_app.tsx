@@ -7,10 +7,13 @@ import { createStorage, createConfig, WagmiConfig } from "wagmi";
 import { MetaMaskConnector } from "wagmi/connectors/metaMask";
 import { bscTestnet } from "wagmi/chains";
 import { publicClient, noopStorage } from "../config/wagmiConfig";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 export function Providers({ children }: { children: React.ReactNode }) {
   return <SaasProvider>{children}</SaasProvider>;
 }
+
+const queryClient = new QueryClient();
 
 export const wagmiconfig = createConfig({
   storage: createStorage({
@@ -26,11 +29,13 @@ const MyApp: AppType = ({ Component, pageProps }) => {
   console.log(x);
   return (
     <main className={GeistSans.className}>
-      <Providers>
-        <WagmiConfig config={wagmiconfig}>
-          <Component {...pageProps} />
-        </WagmiConfig>
-      </Providers>
+      <QueryClientProvider client={queryClient}>
+        <Providers>
+          <WagmiConfig config={wagmiconfig}>
+            <Component {...pageProps} />
+          </WagmiConfig>
+        </Providers>
+      </QueryClientProvider>
     </main>
   );
 };

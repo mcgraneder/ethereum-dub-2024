@@ -32,7 +32,10 @@
     "lint": "eslint '{src,test}/**/*.{js,jsx,ts,json}'"
   },
   "devDependencies": {
+    "@ethersproject/providers": "^5.4.7",
+    "@pancakeswap/chains": "^0.4.1",
     "@types/node": "^15.12.2",
+    "ethers": "5.4.7",
     "tslib": "^2.3.0",
     "tsup": "^6.7.0"
   },

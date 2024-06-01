@@ -1,8 +1,10 @@
 import Head from "next/head";
 import Link from "next/link";
 import { CopyIcon } from "@pancakeswap/uikit";
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import { useAccount, useChainId, useConnect, useDisconnect } from "wagmi";
+import { SmartWalletRouter } from "@eth-dub-2024/router-sdk";
+import { useQuery } from "@tanstack/react-query";
 
 export default function Home() {
   const { address, isConnecting } = useAccount();
@@ -10,7 +12,6 @@ export default function Home() {
   const { connect, connectors } = useConnect();
   const { disconnect } = useDisconnect();
 
-  const smartWalletDetails = { address: "0x0000000000" };
   const primaryColor = "bg-indigo-600";
   const secondaryColor = "bg-indigo-400";
 
@@ -22,6 +23,17 @@ export default function Home() {
   const formatAssetBalance = 0;
 
   const handleAmount = useCallback(() => {}, []);
+
+  const { data: smartWalletDetails, refetch } = useQuery({
+    queryKey: ["smartWalletDetails", address, chainId ?? 0],
+    queryFn: async () => {
+      if (!address || !chainId) return;
+      return SmartWalletRouter.getUserSmartWalletDetails(address, chainId);
+    },
+    retry: false,
+    refetchOnWindowFocus: false,
+    enabled: Boolean(address && chainId),
+  });
 
   return (
     <div className="-m-[100px] flex grid h-screen items-center justify-center">
@@ -41,8 +53,8 @@ export default function Home() {
             </span>
             <div className="mt-1 flex">
               <span className="flex h-14  grow items-center justify-between rounded-md bg-gray-100 px-6">
-                {/* {smartWalletDetails?.address} */}
-                {address}
+                {smartWalletDetails?.address}
+                {/* {address} */}
 
                 <CopyIcon
                   className="ml-2 hover:cursor-pointer"

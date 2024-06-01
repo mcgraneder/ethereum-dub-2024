@@ -51,6 +51,7 @@ describe("SmartWallet", () => {
     const Wallet = (await ethers.getContractFactory(
       "SmartWalletFactory",
     )) as SmartWalletFactory__factory;
+
     const wallet = await Wallet.connect(OWNER).deploy();
     await wallet.connect(OWNER).deployed();
 
