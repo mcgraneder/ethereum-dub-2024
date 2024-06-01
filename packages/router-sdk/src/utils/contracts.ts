@@ -1,13 +1,13 @@
 import type { ChainId } from '@pancakeswap/chains'
 import { erc20Abi, getContract, type Address } from 'viem'
-import { BaseSmartWalletAbi as walletAbi } from '../abis/BaseSmartWalletAbi'
-import { BaseWalletFactoryAbi as factoryAbi } from '../abis/BaseWalletFactoryAbi'
+import { smartWalletAbi as walletAbi } from '../abis/SmartWalletAbi'
+import { smartWalletFactoryAbi as factoryAbi } from '../abis/SmartWalletFactoryAbi'
 import { Deployments } from '../constants/deploymentUtils'
 import { getViemClient } from '../provider/client'
 
 export const getSmartWalletFactory = (chainId: ChainId) => {
   const client = getViemClient({ chainId })
-  const address = Deployments[chainId].BaseWalletFactory
+  const address = Deployments[chainId].ECDSAWalletFactory
   return getContract({ address, client, abi: factoryAbi as typeof factoryAbi })
 }
 

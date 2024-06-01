@@ -12,21 +12,21 @@ import "@openzeppelin/contracts-upgradeable/utils/cryptography/ECDSAUpgradeable.
 //rhe reylayer back the gas cost for exec execution. this functionality is implemented
 // in the optional _walletExecCallback() func, users gas pay relayer back in Native and
 // ERC20 assets
-abstract contract BaseWalletState is SmartWallet {
+abstract contract ECDSAWalletState is SmartWallet {
   SmartWalletFactory factory;
 
   bytes32 public constant ECDSA_WALLET_STORAGE_POSITION = keccak256("wallet.ecdsa.v1");
-  bytes32 public constant HASHED_NAME = keccak256(bytes("BaseWallet"));
+  bytes32 public constant HASHED_NAME = keccak256(bytes("ECDSAWallet"));
   bytes32 public constant HASHED_VERSION = keccak256(bytes("0.0.1"));
   bytes32 public constant TYPE_HASH = keccak256("EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)");
 
-  function __BaseWallet_init(address _owner) public initializer {
+  function __ECDSAWallet_init(address _owner) public initializer {
     __SmartWallet_init_unchained();
-    __BaseWallet_init_unchained(_owner);
+    __ECDSAWallet_init_unchained(_owner);
     factory = SmartWalletFactory(msg.sender);
   }
 
-  function __BaseWallet_init_unchained(address _owner) internal onlyInitializing {
+  function __ECDSAWallet_init_unchained(address _owner) internal onlyInitializing {
     state().owner = _owner;
   }
 
@@ -57,6 +57,12 @@ abstract contract BaseWalletState is SmartWallet {
   }
 
   mapping(uint256 => ECDSAExecValidationDetails) public validationResultsMap;
+  mapping(uint256 => bytes) public bridgeOpsDataMap;
+  mapping(uint256 => bytes) public bridgeVerifierProof;
+  mapping(uint256 => uint256) public bts;
+  mapping(bytes32 => bytes) public signedMessages;
+  mapping(uint256 => bytes) public signedMessages2;
+
   mapping(address => mapping(address => mapping(address => PackedAllowance))) public allowance;
 
   modifier onlyWalletSigners() {

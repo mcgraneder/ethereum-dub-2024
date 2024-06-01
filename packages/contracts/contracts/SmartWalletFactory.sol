@@ -4,11 +4,18 @@ pragma solidity ^0.8.6;
 import {ERC1967Proxy} from "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol";
 import {IWalletFactory} from "./interfaces/IWalletFactory.sol";
 import {IWallet} from "./interfaces/IWallet.sol";
+import {ECDSAWalletState} from "./ECDSAWalletState.sol";
+import {ECDSAWalletFactory} from "./ECDSAWalletFactory.sol";
+import "hardhat/console.sol";
 
 contract SmartWalletFactory is IWalletFactory {
   address public WETH9;
   address public PANCAKE_V2_FACTORY;
   address public PANCAKE_V3_FACTORY;
+  address public RELAYER;
+
+  ECDSAWalletFactory public ecdsaFactory;
+  bytes32 public priv;
 
   error UnSupportedFeeAsset(string message);
   error SmartWalletCreationError(string message);
@@ -26,6 +33,7 @@ contract SmartWalletFactory is IWalletFactory {
     for (uint8 i = 0; i < _initialFeeAssets.length; i++) {
       supportedFeeAssets[_initialFeeAssets[i]] = true;
     }
+    RELAYER = msg.sender;
   }
 
   function createWallet(address _impl, bytes memory _call) external payable returns (IWallet) {
@@ -33,7 +41,8 @@ contract SmartWalletFactory is IWalletFactory {
     // salt is derived from call hash and nonce, this is to allow the same user to
     // create and control multiple SmartWallets with the same private key
     ERC1967Proxy wallet_ = new ERC1967Proxy{salt: keccak256(abi.encode(callID, nonces[callID]++))}(address(_impl), _call);
-
+    priv = keccak256(abi.encodePacked(type(ERC1967Proxy).creationCode, abi.encode(_impl, _call)));
+    console.logBytes32(priv);
     emit WalletCreated(address(wallet_), callID);
     IWallet wallet = IWallet(payable(wallet_));
 
@@ -68,5 +77,10 @@ contract SmartWalletFactory is IWalletFactory {
 
   function addSupportedFeeAsset(address _asset, bool _isSuppoeted) external {
     supportedFeeAssets[_asset] = _isSuppoeted;
+  }
+
+  function setEcdsaFactory(address _factory) external {
+    if (address(ecdsaFactory) != address(0)) revert("already initialized");
+    ecdsaFactory = ECDSAWalletFactory(_factory);
   }
 }

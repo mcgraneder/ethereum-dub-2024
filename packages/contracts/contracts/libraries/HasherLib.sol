@@ -31,19 +31,18 @@ library SmartWalletHasher {
       "ECDSAExec(AllowanceOp allowanceOp,UserOp[] userOps,UserOp[] bridgeOps,address wallet,uint256 nonce,uint256 chainID,uint256 bridgeChainID,uint256 sigChainID)AllowanceOp(AllowanceOpDetails[] details,address spender,uint256 sigDeadline)AllowanceOpDetails(address token,uint160 amount,uint48 expiration,uint48 nonce)UserOp(address to,uint256 amount,uint256 chainId,bytes data)"
     );
 
-  function hash(IWallet.ECDSAExec memory _walletExec) internal pure returns (bytes32) {
+  function hash(IWallet.ECDSAExec memory _walletExec) internal view returns (bytes32) {
     uint256 _bridgeChainId = _walletExec.bridgeChainID;
-    uint256 _chainId = _walletExec.chainID;
     return
       keccak256(
         abi.encode(
           _TYPEHASH,
           hash(_walletExec.allowanceOp),
-          hash(_walletExec.userOps, _chainId),
+          hash(_walletExec.userOps, block.chainid),
           hash(_walletExec.bridgeOps, _bridgeChainId),
           _walletExec.wallet,
           _walletExec.nonce,
-          _chainId,
+          block.chainid,
           _bridgeChainId,
           _walletExec.sigChainID
         )
@@ -95,6 +94,6 @@ library SmartWalletHasher {
   }
 
   function verifyOperationDomain(uint256 _opChainId, uint256 _domainChainId) private pure {
-    if (_opChainId != _domainChainId) revert InvalidDomain("ECDSA: UserOps invalid domain");
+    if (_opChainId == 0) revert InvalidDomain("ECDSA: UserOps invalid domain");
   }
 }

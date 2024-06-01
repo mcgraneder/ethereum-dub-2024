@@ -3,7 +3,7 @@ import type { BigintIsh, Currency } from '@pancakeswap/swap-sdk-core'
 import type { PancakeSwapOptions } from '@pancakeswap/universal-router-sdk'
 import type { MethodParameters } from '@pancakeswap/v3-sdk'
 import type { Address, GetContractReturnType, Hex } from 'viem'
-import type { BaseSmartWalletAbi as walletAbi } from '../abis/BaseSmartWalletAbi'
+import type { smartWalletAbi as walletAbi } from '../abis/SmartWalletAbi'
 import type { RouterTradeType, Routers } from '../encoder/buildOperation'
 import type { SmartWalletPermitOptions } from './permit2'
 

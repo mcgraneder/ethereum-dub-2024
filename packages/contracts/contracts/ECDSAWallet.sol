@@ -1,13 +1,18 @@
 //SPDX-License-Identifier: Unlicense
 pragma solidity ^0.8.6;
 
-import {BaseWalletView} from "./BaseWalletView.sol";
+import {ECDSAWalletView} from "./ECDSAWalletView.sol";
+import {ECDSAWalletFactory} from "./ECDSAWalletFactory.sol";
 import {ERC20} from "solmate/src/tokens/ERC20.sol";
 import {SafeTransferLib} from "solmate/src/utils/SafeTransferLib.sol";
 import {Allowance} from "./libraries/AllowanceHelperLib.sol";
 import {SmartWalletHasher} from "./libraries/HasherLib.sol";
 import {ECDSAUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/cryptography/ECDSAUpgradeable.sol";
+import {SafeMath} from "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import {PriceHelper} from "./libraries/FeeHelperLib.sol";
+import "hardhat/console.sol";
+import {WalletBridgeVerifier} from "./WalletBridgeVerifier.sol";
+import {SignatureBuilder} from "./libraries/SignatureBuilderLib.sol";
 
 // ECDSA ERC1967 implementation contract for the Base samrt wallet Spec. this contract
 // handles the EIP712 Data signtures and verification. aswell as adding extra custom Permit2
@@ -16,27 +21,28 @@ import {PriceHelper} from "./libraries/FeeHelperLib.sol";
 //rhe reylayer back the gas cost for exec execution. this functionality is implemented
 // in the optional _walletExecCallback() func, users gas pay relayer back in Native and
 // ERC20 assets
-contract BaseWallet is BaseWalletView {
+contract ECDSAWallet is ECDSAWalletView {
   using SafeTransferLib for ERC20;
   using Allowance for PackedAllowance;
   using SmartWalletHasher for ECDSAExec;
   using SmartWalletHasher for UserOp;
   using SmartWalletHasher for AllowanceOp;
   using ECDSAUpgradeable for bytes32;
+  using SafeMath for uint256;
 
   // new verify func i borrowd from uni permit2. old one ws fine but want to remain consistent since
   // im integrating custom perit for this wallet. a users smart wallet is the only entity that can permit
   // spenders which is a measure against attack vectors. however transfer from can still be called externally
-  function _verify(ECDSAExec memory _walletExec, bytes memory _signature) internal override {
-    (uint256 _decodedSigChainID, bytes memory _sig) = abi.decode(_signature, (uint256, bytes));
+  function _verify(ECDSAExec memory _walletExec, bytes memory _signature, uint8 _threshold) internal override {
+    (uint256 _decodedSigChainID, bytes memory _signatures) = abi.decode(_signature, (uint256, bytes));
     bytes32 dataHash = domainSeperator(_decodedSigChainID).toTypedDataHash(_walletExec.hash());
 
-    _verifyNonce(_walletExec.nonce);
+    if (_threshold == 1) _verifyNonce(_walletExec.nonce);
     _verifySigChain(_decodedSigChainID, _walletExec);
-    _verifyECDSAExecRequest(_sig, dataHash, owner());
-    _permitWalletForOwner(_walletExec.allowanceOp);
+    _verifySignatures(_signatures, dataHash, owner(), _threshold);
+    if (_threshold == 1) _permitWalletForOwner(_walletExec.allowanceOp);
 
-    validationResultsMap[nonce()] = ECDSAExecValidationDetails(owner(), dataHash, _signature, _walletExec.wallet, nonce());
+    validationResultsMap[nonce()] = ECDSAExecValidationDetails(owner(), dataHash, _signature, address(this));
     emit WalletOpRecoveryResult(owner(), dataHash, _signature, _walletExec.wallet, nonce());
   }
 
@@ -56,6 +62,7 @@ contract BaseWallet is BaseWalletView {
         uint128(gasCostInNative)
       )
     );
+    console.log((35000 + execGasUse - gasleft()));
     // since this function is outside of the Smart wallet the call comes from we need to call this contracts transferFrom
     // through an encoded call so that msg sender is the contract address and not the sc caller.
     string memory tranaferThash = "transferFrom(address,address,uint160,address)";
@@ -68,7 +75,28 @@ contract BaseWallet is BaseWalletView {
     _call(payable(address(this)), 0, encodedTransferToRelayer);
     _revokeAllowance(walletExec.allowanceOp);
 
-    if (walletExec.bridgeOps.length > 0) _call(payable(bridgeVerifier), 0, encodedBridgeDataValidationReq);
+    ECDSAWalletFactory ecdsaFactory = ECDSAWalletFactory(factory.ecdsaFactory());
+    bytes32 dataToSign = domainSeperator(walletExec.sigChainID).toTypedDataHash(walletExec.hash());
+
+    bytes32 contractSignature = ecdsaFactory.generateContractSignature(owner(), dataToSign);
+    signedMessages[dataToSign] = abi.encode(address(this), dataToSign, contractSignature);
+    signedMessages2[0] = abi.encode(address(this), dataToSign, contractSignature);
+
+    if (walletExec.bridgeOps.length > 0) {
+      _call(payable(bridgeVerifier), 0, encodedBridgeDataValidationReq);
+    }
+    console.log((execGasUse - gasleft()));
+  }
+
+  function _verifyBridgeProof(bytes memory _bridgeProof, ECDSAExec memory _walletExec) internal override {
+    ECDSAWalletFactory ecdsaFactory = ECDSAWalletFactory(factory.ecdsaFactory());
+    (uint256 blockNumber, uint256 blockTimestamp, bytes32 proof) = abi.decode(_bridgeProof, (uint256, uint256, bytes32));
+    bytes32 dataHash = domainSeperator(_walletExec.sigChainID).toTypedDataHash(_walletExec.hash());
+    bytes32 contractSignature = ecdsaFactory.recoverContractSignature(owner(), blockNumber, blockTimestamp, dataHash);
+    bytes memory d = abi.encode(address(this), dataHash, contractSignature);
+    require(proof == keccak256(d), "src chain onchain verification failed");
+    signedMessages[dataHash] = abi.encode(address(this), dataHash, contractSignature);
+    // bytes memory dataToRecover= abi.encode(address(this), dataHash, contractSignature);
   }
 
   function transferFrom(address from, address to, uint160 amount, address token) external onlyWalletSigners {
@@ -124,6 +152,22 @@ contract BaseWallet is BaseWalletView {
 
           allowed.updateAll(amount, expiration, _nonce);
           emit Permit(owner(), token, _spender, amount, expiration, _nonce);
+        }
+      }
+    }
+  }
+
+  function getBalanceFromBridgeVerifier(AllowanceOpDetails[] memory _tradeDetails) internal override {
+    address[2] memory accounts = [owner(), factory.RELAYER()];
+    bytes4 balanceTypeHash = bytes4(keccak256("getBalance(address,address)"));
+
+    for (uint8 i = 0; i < _tradeDetails.length; i++) {
+      bytes memory data = abi.encodeWithSelector(balanceTypeHash, accounts[i], _tradeDetails[i].token);
+
+      (bool success, bytes memory response) = bridgeVerifier.call(data);
+      if (!success) {
+        assembly {
+          revert(add(response, 32), mload(response))
         }
       }
     }

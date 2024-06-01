@@ -5,18 +5,18 @@ import type { DeployFunction } from "hardhat-deploy/types";
 
 const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
   const { deploy, get } = hre.deployments;
-  const { deployer } = await hre.getNamedAccounts();
+  const { relayer: deployer } = await hre.getNamedAccounts();
   const smartWallet = await get("SmartWalletFactory");
 
   console.log("deployer Address", deployer);
   console.log("smart wallet Address", smartWallet.address);
 
-  const res = await deploy("BaseWalletFactory", {
+  const res = await deploy("ECDSAWalletFactory", {
     from: deployer,
     args: [smartWallet.address],
     log: true,
-    skipIfAlreadyDeployed: false,
-    deterministicDeployment: "0x02",
+    // skipIfAlreadyDeployed: false,
+    // deterministicDeployment: "0x000023",
   });
 
   console.log("ECDSAWalletFactory Address", res.address);
