@@ -1,4 +1,4 @@
-export { SmartWalletRouter } from './smartWalletRouter'
+export { SmartWalletRouter } from './SmartWalletRouter'
 export * from './utils/contracts'
 export * from './utils/getSwapRouterAddress'
 export * from './constants/deploymentUtils'
