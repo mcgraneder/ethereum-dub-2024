@@ -68,6 +68,7 @@ export default function Home() {
                   className="absolute h-14 grow rounded-md bg-transparent pl-6 pr-12 outline-none "
                   value={asset.symbol}
                   // onChange={(e) => handleAssetChange(e, setAsset)}
+                  onChange={(e) => null}
                 >
                   {/* {Object.entries(assets).map(([k], i) => {
                   return <option key={`${k}`}>{k}</option>;
