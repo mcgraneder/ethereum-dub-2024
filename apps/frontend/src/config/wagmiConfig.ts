@@ -22,7 +22,11 @@ const { publicClient, chains } = configureChains(
           ) {
             return { http: "https://ethereum.publicnode.com" };
           }
-          return { http: PUBLIC_NODES?.[chain.id]?.[i] };
+          return {
+            http:
+              PUBLIC_NODES?.[chain.id]?.[i] ??
+              "https://ethereum.publicnode.com",
+          };
         },
       });
     }),
