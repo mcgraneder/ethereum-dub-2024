@@ -3,7 +3,7 @@ pragma solidity ^0.8.6;
 
 import {BaseWallet} from "./BaseWallet.sol";
 import {SmartWalletFactory} from "./SmartWalletFactory.sol";
-import "./interfaces/IWallet.sol";
+import {IWallet} from "./interfaces/IWallet.sol";
 
 contract BaseWalletFactory {
   SmartWalletFactory factory;
