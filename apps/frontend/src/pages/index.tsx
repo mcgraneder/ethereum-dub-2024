@@ -2,10 +2,14 @@ import Head from "next/head";
 import Link from "next/link";
 import { CopyIcon } from "@pancakeswap/uikit";
 import { useCallback } from "react";
+import { useAccount, useChainId, useConnect, useDisconnect } from "wagmi";
 
 export default function Home() {
-  const address = "0x0000000000";
-  const isConnected = false;
+  const { address, isConnecting } = useAccount();
+  const chainId = useChainId();
+  const { connect, connectors } = useConnect();
+  const { disconnect } = useDisconnect();
+
   const smartWalletDetails = { address: "0x0000000000" };
   const primaryColor = "bg-indigo-600";
   const secondaryColor = "bg-indigo-400";
@@ -25,10 +29,9 @@ export default function Home() {
         // biome-ignore lint/a11y/useButtonType: <explanation>
         <button
           className={`rounded-md ${"bg-indigo-600"} py-4 font-medium text-white hover:${secondaryColor}`}
-          // onClick={() => connect({ connector: connectors[0] })}
-          onClick={() => null}
+          onClick={() => connect({ connector: connectors[0] })}
         >
-          {!isConnected ? "Connecting..." : "Connect Wallet"}
+          {isConnecting ? "Connecting..." : "Connect Wallet"}
         </button>
       ) : (
         <div className="mx-auto mt-[200px] w-[600px] items-center">
@@ -38,7 +41,9 @@ export default function Home() {
             </span>
             <div className="mt-1 flex">
               <span className="flex h-14  grow items-center justify-between rounded-md bg-gray-100 px-6">
-                {smartWalletDetails?.address}
+                {/* {smartWalletDetails?.address} */}
+                {address}
+
                 <CopyIcon
                   className="ml-2 hover:cursor-pointer"
                   onClick={async () => {
@@ -51,8 +56,7 @@ export default function Home() {
               {/* biome-ignore lint/a11y/useButtonType: <explanation> */}
               <button
                 className={`ml-2 rounded-md ${primaryColor} px-4 py-4 font-medium text-white hover:${secondaryColor}`}
-                // onClick={() => disconnect()}
-                onClick={() => null}
+                onClick={() => disconnect()}
               >
                 Disconnect
               </button>
@@ -151,7 +155,7 @@ export default function Home() {
                       {/* {allowance?.t0Allowance.needsApproval
                       ? "Approve Smart Router"
                       : transactionStatusDisplay} */}
-                      Approve Smart Router
+                      Action
                     </p>
                     {/* <LoadingSpinner
                     opacity={

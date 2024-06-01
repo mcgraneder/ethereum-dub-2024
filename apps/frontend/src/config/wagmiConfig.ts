@@ -1,8 +1,7 @@
-import type { ChainId } from "@pancakeswap/chains";
 import { configureChains } from "wagmi";
 import { mainnet } from "wagmi/chains";
 import { jsonRpcProvider } from "wagmi/providers/jsonRpc";
-import { CHAINS, PUBLIC_NODES, type ExtendedChainId } from "./chains";
+import { CHAINS, PUBLIC_NODES } from "./chains";
 
 const mostNodesConfig = Object.values(PUBLIC_NODES).reduce((prev, cur) => {
   return cur.length > prev ? cur.length : prev;
