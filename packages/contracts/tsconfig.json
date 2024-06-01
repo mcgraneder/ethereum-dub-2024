@@ -1,0 +1,21 @@
+{
+	"extends": "@eth-dub-2024/tsconfig/base",
+	"compilerOptions": {
+		"target": "ES2022",
+		"module": "CommonJS",
+		"strict": true,
+		"esModuleInterop": true,
+		"moduleResolution": "node",
+		"forceConsistentCasingInFileNames": true,
+		"outDir": "dist",
+		"composite": true,
+		"lib": ["ES2022"]
+	},
+	"include": ["./src", "./utils", "typechain/**/*", "scripts/t.ts"],
+	"files": [
+		// "./hardhat.config.ts",
+		"./utils/env.ts",
+		"./utils/sign.ts",
+		"./utils/types.ts"
+	]
+}

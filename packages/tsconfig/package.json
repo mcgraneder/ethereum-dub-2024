@@ -1,0 +1,7 @@
+{
+  "name": "@eth-dub-2024/tsconfig",
+  "version": "0.0.0",
+  "license": "ISC",
+  "main": "index.js",
+  "private": true
+}

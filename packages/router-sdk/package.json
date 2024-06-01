@@ -1,0 +1,44 @@
+{
+  "name": "@eth-dub-2024/router-sdk",
+  "version": "1.0.0",
+  "description": "🛠 An SDK for building applications on top of smart wallet.",
+  "main": "dist/index.js",
+  "typings": "dist/index.d.ts",
+  "module": "dist/index.mjs",
+  "files": [
+    "dist"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mcgraneder/eth-dub-2024.git",
+    "directory": "packages/router-sdk"
+  },
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "coverage": "vitest run --coverage",
+    "test": "vitest --run",
+    "clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist",
+    "format:check": "prettier --check --loglevel error \"{src,test}/**/*.{js,jsx,ts,tsx,json}\"",
+    "format:write": "prettier --write \"{src,test}/**/*.{js,jsx,ts,tsx,json}\"",
+    "lint": "eslint '{src,test}/**/*.{js,jsx,ts,json}'"
+  },
+  "devDependencies": {
+    "@types/node": "^15.12.2",
+    "tslib": "^2.3.0",
+    "tsup": "^6.7.0"
+  },
+  "dependencies": {
+    "abitype": "^0.9.8",
+    "tiny-invariant": "^1.1.0",
+    "viem": "2.9.19"
+  }
+}
