@@ -15,15 +15,19 @@
   "dependencies": {
     "@eth-dub-2024/router-sdk": "workspace:*",
     "@next/bundle-analyzer": "13.0.7",
+    "@pancakeswap/chains": "^0.4.1",
     "@saas-ui/react": "^2.8.5",
     "@t3-oss/env-nextjs": "^0.10.1",
     "@vanilla-extract/vite-plugin": "^4.0.2",
     "@vercel/flags": "^2.3.0",
     "@vercel/toolbar": "^0.1.13",
+    "ethers": "5.4.7",
     "geist": "^1.3.0",
     "next": "^14.2.1",
     "react": "^18.3.0",
     "react-dom": "^18.3.0",
+    "viem": "1.3.1",
+    "wagmi": "1.3.9",
     "zod": "^3.23.3"
   },
   "devDependencies": {
