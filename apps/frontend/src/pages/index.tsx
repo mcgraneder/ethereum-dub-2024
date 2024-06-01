@@ -1,10 +1,32 @@
 import Head from "next/head";
 import Link from "next/link";
 import { CopyIcon } from "@pancakeswap/uikit";
-import { useCallback, useMemo } from "react";
-import { useAccount, useChainId, useConnect, useDisconnect } from "wagmi";
+import { useCallback, useMemo, useState } from "react";
+import {
+  useAccount,
+  useChainId,
+  useConnect,
+  useDisconnect,
+  useSignTypedData,
+  useSwitchNetwork,
+} from "wagmi";
 import { SmartWalletRouter } from "@eth-dub-2024/router-sdk";
 import { useQuery } from "@tanstack/react-query";
+import { type Currency, CurrencyAmount } from "@pancakeswap/sdk";
+import { type Asset, assets, assetsBaseConfig } from "~/lib/assets";
+import { useTokenBalance } from "~/hooks/useBalance";
+import type { TransactionReceipt } from "viem";
+
+export enum ConfirmModalState {
+  REVIEWING = -1,
+  APPROVING_TOKEN = 0,
+  PERMITTING = 1,
+  PENDING_CONFIRMATION = 2,
+  SIGNED = 3,
+  EXECUTING = 4,
+  COMPLETED = 5,
+  FAILED = 6,
+}
 
 export default function Home() {
   const { address, isConnecting } = useAccount();
@@ -15,14 +37,70 @@ export default function Home() {
   const primaryColor = "bg-indigo-600";
   const secondaryColor = "bg-indigo-400";
 
-  const feeAsset = { symbol: "USDT" };
-  const asset = { symbol: "CAKE" };
-  const toAsset = { symbol: "WBNB" };
-  const inputValue = 0;
-  const formatFeeBalance = 0;
-  const formatAssetBalance = 0;
+  const { switchNetwork } = useSwitchNetwork();
 
-  const handleAmount = useCallback(() => {}, []);
+  const { signTypedDataAsync } = useSignTypedData();
+
+  const [txState, setTXState] = useState<ConfirmModalState>(
+    ConfirmModalState.REVIEWING,
+  );
+
+  const [tx, setTx] = useState<TransactionReceipt | undefined>(undefined);
+  const [inputValue, setInputValue] = useState("");
+  const [asset, setAsset] = useState<Currency>(assetsBaseConfig.CAKE);
+  const [toAsset, setToAsset] = useState<Currency>(assetsBaseConfig.BUSD);
+  const [feeAsset, setFeeAsset] = useState<Currency>(assetsBaseConfig.CAKE);
+
+  const assetBalance = useTokenBalance(asset.wrapped.address, address!);
+  const feeBalance = useTokenBalance(feeAsset.wrapped.address);
+
+  const formatAssetBalance = useMemo(
+    () => assetBalance.balance.shiftedBy(-asset.decimals).toFixed(3),
+    [assetBalance, asset],
+  );
+
+  const formatFeeBalance = useMemo(
+    () => feeBalance.balance.shiftedBy(-feeAsset.decimals).toFixed(3),
+    [feeBalance, feeAsset],
+  );
+  const amount = useMemo(
+    () =>
+      CurrencyAmount.fromRawAmount(
+        asset,
+        Number(inputValue) * 10 ** asset.decimals,
+      ),
+    [asset, inputValue],
+  );
+
+  const handleAssetChange = useCallback(
+    (
+      e: React.ChangeEvent<HTMLSelectElement>,
+      setFunction: React.Dispatch<React.SetStateAction<Currency>>,
+    ) => {
+      const newAsset = assetsBaseConfig[e.target.value as Asset];
+      setFunction(newAsset);
+    },
+    [],
+  );
+
+  const handleAmount = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      if (txState === ConfirmModalState.COMPLETED) {
+        setTXState(ConfirmModalState.REVIEWING);
+      }
+      setInputValue(e.target.value);
+    },
+    [txState],
+  );
+
+  const handleamount2 = useCallback(
+    async (e: any) => {
+      if (txState === ConfirmModalState.EXECUTING) {
+        setInputValue(e);
+      }
+    },
+    [txState],
+  );
 
   const { data: smartWalletDetails, refetch } = useQuery({
     queryKey: ["smartWalletDetails", address, chainId ?? 0],
@@ -54,7 +132,6 @@ export default function Home() {
             <div className="mt-1 flex">
               <span className="flex h-14  grow items-center justify-between rounded-md bg-gray-100 px-6">
                 {smartWalletDetails?.address}
-                {/* {address} */}
 
                 <CopyIcon
                   className="ml-2 hover:cursor-pointer"
@@ -83,12 +160,11 @@ export default function Home() {
                 <select
                   className="absolute h-14 grow rounded-md bg-transparent pl-6 pr-12 outline-none "
                   value={asset.symbol}
-                  // onChange={(e) => handleAssetChange(e, setAsset)}
-                  onChange={(e) => null}
+                  onChange={(e) => handleAssetChange(e, setAsset)}
                 >
-                  {/* {Object.entries(assets).map(([k], i) => {
-                  return <option key={`${k}`}>{k}</option>;
-                })} */}
+                  {Object.entries(assets).map(([k], i) => {
+                    return <option key={`${k}`}>{k}</option>;
+                  })}
                 </select>
                 <input
                   type="number"
@@ -103,11 +179,11 @@ export default function Home() {
                 <select
                   className="absolute h-14 grow rounded-md bg-transparent pl-6 pr-12 outline-none "
                   value={feeAsset.symbol}
-                  // onChange={(e) => handleAssetChange(e, setFeeAsset)}
+                  onChange={(e) => handleAssetChange(e, setFeeAsset)}
                 >
-                  {/* {Object.entries(assets).map(([k], i) => {
-                  return <option key={`2-${k}`}>{k}</option>;
-                })} */}
+                  {Object.entries(assets).map(([k], i) => {
+                    return <option key={`2-${k}`}>{k}</option>;
+                  })}
                 </select>
                 <input
                   type="number"
@@ -125,11 +201,11 @@ export default function Home() {
                 <select
                   className="absolute h-14 grow rounded-md bg-transparent pl-6 pr-12 outline-none "
                   value={toAsset.symbol}
-                  // onChange={(e) => handleAssetChange(e, setToAsset)}
+                  onChange={(e) => handleAssetChange(e, setToAsset)}
                 >
-                  {/* {Object.entries(assets).map(([k], i) => {
-                  return <option key={`3-${k}`}>{k}</option>;
-                })} */}
+                  {Object.entries(assets).map(([k], i) => {
+                    return <option key={`3-${k}`}>{k}</option>;
+                  })}
                 </select>
                 <input
                   type="number"
