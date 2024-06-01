@@ -2,6 +2,7 @@
 pragma solidity ^0.8.6;
 
 import {BaseWallet} from "./BaseWallet.sol";
+import {BaseWalletState} from "./BaseWalletState.sol";
 import {SmartWalletFactory} from "./SmartWalletFactory.sol";
 import {IWallet} from "./interfaces/IWallet.sol";
 
@@ -17,10 +18,10 @@ contract BaseWalletFactory {
   }
 
   function createWallet(address _owner) external returns (IWallet) {
-    return factory.createWallet(address(wallet), abi.encodeWithSelector(BaseWallet.__BaseWallet_init.selector, _owner));
+    return factory.createWallet(address(wallet), abi.encodeWithSelector(BaseWalletState.__BaseWallet_init.selector, _owner));
   }
 
   function walletAddress(address _owner, uint256 _nonce) external view returns (address) {
-    return factory.walletAddress(address(wallet), abi.encodeWithSelector(BaseWallet.__BaseWallet_init.selector, _owner), _nonce);
+    return factory.walletAddress(address(wallet), abi.encodeWithSelector(BaseWalletState.__BaseWallet_init.selector, _owner), _nonce);
   }
 }

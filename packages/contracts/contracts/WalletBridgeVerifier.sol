@@ -25,7 +25,7 @@ contract WalletBridgeVerifier {
     address walletOwner = walletExec.wallet;
     uint256 nonce = walletExec.nonce;
 
-    ECDSAWallet f = ECDSAWallet(payable(walletOwner));
+    BaseWallet f = BaseWallet(payable(walletOwner));
     bytes32 domain = f.domainSeperator(walletExec.sigChainID);
 
     (address claimedSigner, bytes32 dataHash, bytes memory signature, address wallet, uint256 _nonce) = f.validationResultsMap(nonce);
@@ -34,7 +34,7 @@ contract WalletBridgeVerifier {
     //     require(waletOwnerRecoveryEvents.length > 0, "Array is empty");
     console.log(walletOwner);
     //     RecoveryDetails memory recoveryInfo = waletOwnerRecoveryEvents[uint(waletOwnerRecoveryEvents.length - 1)];
-    console.log(ECDSAWallet(payable(walletOwner)).owner(), walletExec.sigChainID);
+    console.log(BaseWallet(payable(walletOwner)).owner(), walletExec.sigChainID);
     //make sure recieved data matches log
     _ecdasRecovery(_signature, dataHash, walletOwner, address(this));
     //     //     compareStructs(walletExec);

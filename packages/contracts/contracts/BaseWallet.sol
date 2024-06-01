@@ -1,7 +1,7 @@
 //SPDX-License-Identifier: Unlicense
 pragma solidity ^0.8.6;
 
-import {ECDSAWalletView} from "./ECDSAWalletView.sol";
+import {BaseWalletView} from "./BaseWalletView.sol";
 import {ERC20} from "solmate/src/tokens/ERC20.sol";
 import {SafeTransferLib} from "solmate/src/utils/SafeTransferLib.sol";
 import {Allowance} from "./libraries/AllowanceHelperLib.sol";
