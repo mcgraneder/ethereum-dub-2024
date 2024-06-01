@@ -4,6 +4,9 @@ pragma solidity ^0.8.6;
 import "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol";
 import "./interfaces/IWalletFactory.sol";
 
+// we will use the base smart wallet example to try get this working first
+// once we can do a simple eth transfer we can try to iron out the custom and new
+//logic we need to build
 contract SmartWalletFactory is IWalletFactory {
   mapping(bytes32 => uint256) nonces;
 
