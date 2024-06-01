@@ -9,7 +9,6 @@ import {
 
 export enum ExtendedChainId {
   LOCAL = 31337,
-  Seoilla = 412,
 }
 
 const bsc = {
@@ -29,10 +28,7 @@ const bsc = {
 
 export const CHAINS = [bsc, bscTestnet, mainnet, sepolia];
 
-export const PUBLIC_NODES: Record<
-  ChainId | ExtendedChainId,
-  readonly string[]
-> = {
+export const PUBLIC_NODES: Record<number, string[]> = {
   [ChainId.BSC]: [
     "https://bsc.publicnode.com",
     "https://binance.llamarpc.com",
@@ -45,11 +41,11 @@ export const PUBLIC_NODES: Record<
     "https://eth.llamarpc.com",
     "https://cloudflare-eth.com",
   ].filter(Boolean),
-  [ChainId.SEPOLIA]: sepolia.rpcUrls.default.http,
+  [ChainId.SEPOLIA]: ["https://rpc.sepolia.org"],
   [ExtendedChainId.LOCAL]: ["http://127.0.0.1:8545/"],
-} satisfies Record<ChainId | ExtendedChainId, readonly string[]>;
+} satisfies Record<number, string[]>;
 
-export const ChainsAdapter: { [chain in ChainId]: Chain } = {
+export const ChainsAdapter: { [chainId: number]: Chain } = {
   [ChainId.ETHEREUM]: mainnet,
   [ChainId.BSC]: bsc_,
   [ChainId.SEPOLIA]: sepolia,
