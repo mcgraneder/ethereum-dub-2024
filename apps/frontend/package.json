@@ -40,6 +40,7 @@
   "devDependencies": {
     "@eth-dub-2024/next-config": "workspace:*",
     "@eth-dub-2024/tsconfig": "workspace:*",
+    "@ethersproject/abi": "^5.4.7",
     "@pancakeswap/uikit": "^0.64.0",
     "@types/eslint": "^8.56.2",
     "@types/node": "^20.11.20",

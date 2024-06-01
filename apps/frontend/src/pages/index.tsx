@@ -35,7 +35,7 @@ import useDebounce from "~/hooks/useDebounce";
 import { useSmartRouterBestTrade } from "~/hooks/useSmartRouterBestTrade";
 import { wagmiconfig } from "./_app";
 import { getSmartWalletOptions } from "~/utils/getSmartWalletOptions";
-import { defaultAbiCoder } from "ethers/";
+import { defaultAbiCoder } from "@ethersproject/abi";
 import { useTheme } from "~/hooks/useTheme";
 
 export enum ConfirmModalState {
@@ -478,7 +478,9 @@ export default function Home() {
                 <div className="overflow-ellipsis text-[17px]  ">
                   {`${formatToAssetBalance} ${toAsset.symbol}`}
                 </div>
+                {/* <div className="bold  text-ml">{tx?.transactionHash}</div> */}
               </div>
+              <div className="bold  text-ml">{tx?.transactionHash}</div>
             </div>
           </div>
         </div>

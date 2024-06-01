@@ -148,6 +148,9 @@ importers:
       '@eth-dub-2024/tsconfig':
         specifier: workspace:*
         version: link:../../packages/tsconfig
+      '@ethersproject/abi':
+        specifier: ^5.4.7
+        version: 5.7.0
       '@pancakeswap/uikit':
         specifier: ^0.64.0
         version: 0.64.0(react-dom@18.3.1)(react@18.3.1)(styled-components@5.3.11)
