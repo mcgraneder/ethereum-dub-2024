@@ -13,7 +13,7 @@
 	},
 	"include": ["./src", "./utils", "typechain/**/*", "scripts/t.ts"],
 	"files": [
-		// "./hardhat.config.ts",
+		"./hardhat.config.ts",
 		"./utils/env.ts",
 		"./utils/sign.ts",
 		"./utils/types.ts"
