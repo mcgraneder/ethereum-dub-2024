@@ -25,6 +25,8 @@ abstract contract SmartWallet is UUPSUpgradeable, IWallet {
 
   function nonce() public view virtual returns (uint256);
 
+  function exec(UserOp userOps, bytes memory signature) public {}
+
   function _authorizeUpgrade(address) internal view override {
     require(msg.sender == address(this));
   }
