@@ -1,21 +1,42 @@
 import Head from "next/head";
 import Link from "next/link";
 import { CopyIcon } from "@pancakeswap/uikit";
-import { useCallback, useMemo, useState } from "react";
+import {
+  useCallback,
+  useDeferredValue,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import {
   useAccount,
   useChainId,
   useConnect,
   useDisconnect,
+  useNetwork,
   useSignTypedData,
   useSwitchNetwork,
 } from "wagmi";
-import { SmartWalletRouter } from "@eth-dub-2024/router-sdk";
+import {
+  Deployments,
+  RouterTradeType,
+  SmartWalletRouter,
+} from "@eth-dub-2024/router-sdk";
 import { useQuery } from "@tanstack/react-query";
 import { type Currency, CurrencyAmount } from "@pancakeswap/sdk";
 import { type Asset, assets, assetsBaseConfig } from "~/lib/assets";
 import { useTokenBalance } from "~/hooks/useBalance";
-import type { TransactionReceipt } from "viem";
+import {
+  TransactionRejectedRpcError,
+  UserRejectedRequestError,
+  type TransactionReceipt,
+} from "viem";
+import useDebounce from "~/hooks/useDebounce";
+import { useSmartRouterBestTrade } from "~/hooks/useSmartRouterBestTrade";
+import { wagmiconfig } from "./_app";
+import { getSmartWalletOptions } from "~/utils/getSmartWalletOptions";
+import { defaultAbiCoder } from "ethers/";
+import { useTheme } from "~/hooks/useTheme";
 
 export enum ConfirmModalState {
   REVIEWING = -1,
@@ -29,13 +50,12 @@ export enum ConfirmModalState {
 }
 
 export default function Home() {
-  const { address, isConnecting } = useAccount();
+  const { chain: currenChain } = useNetwork();
+
+  const { address, isConnecting, isConnected } = useAccount();
   const chainId = useChainId();
   const { connect, connectors } = useConnect();
   const { disconnect } = useDisconnect();
-
-  const primaryColor = "bg-indigo-600";
-  const secondaryColor = "bg-indigo-400";
 
   const { switchNetwork } = useSwitchNetwork();
 
@@ -51,17 +71,22 @@ export default function Home() {
   const [toAsset, setToAsset] = useState<Currency>(assetsBaseConfig.BUSD);
   const [feeAsset, setFeeAsset] = useState<Currency>(assetsBaseConfig.CAKE);
 
-  const assetBalance = useTokenBalance(asset.wrapped.address, address!);
-  const feeBalance = useTokenBalance(feeAsset.wrapped.address);
+  const assetBalance = useTokenBalance(asset.wrapped.address);
+  const toAssetBalance = useTokenBalance(toAsset.wrapped.address);
 
+  const { transactionStatusDisplay, primaryColor, secondaryColor } = useTheme(
+    txState,
+    asset,
+    toAsset,
+  );
   const formatAssetBalance = useMemo(
     () => assetBalance.balance.shiftedBy(-asset.decimals).toFixed(3),
     [assetBalance, asset],
   );
 
-  const formatFeeBalance = useMemo(
-    () => feeBalance.balance.shiftedBy(-feeAsset.decimals).toFixed(3),
-    [feeBalance, feeAsset],
+  const formatToAssetBalance = useMemo(
+    () => toAssetBalance.balance.shiftedBy(-toAsset.decimals).toFixed(3),
+    [toAssetBalance, toAsset],
   );
   const amount = useMemo(
     () =>
@@ -103,6 +128,199 @@ export default function Home() {
     refetchOnWindowFocus: false,
     enabled: Boolean(address && chainId),
   });
+
+  const { data: allowance, refetch: refetchAlloance } = useQuery({
+    queryKey: [
+      "allowance-query",
+      chainId,
+      asset.symbol,
+      feeAsset.symbol,
+      address,
+      chainId,
+    ],
+    queryFn: async () => {
+      if (
+        !asset ||
+        !chainId ||
+        !address ||
+        !smartWalletDetails ||
+        !amount ||
+        !feeAsset
+      )
+        return undefined;
+
+      return SmartWalletRouter.getContractAllowance(
+        [asset.wrapped.address, feeAsset.wrapped.address],
+        address,
+        smartWalletDetails?.address,
+        chainId,
+        amount.quotient,
+      );
+    },
+
+    refetchInterval: 20000,
+    retry: false,
+    refetchOnWindowFocus: false,
+    enabled: Boolean(
+      address && asset && chainId && smartWalletDetails && amount,
+    ),
+  });
+  const deferQuotientRaw = useDeferredValue(amount.quotient.toString());
+  const {
+    data: trade,
+    isLoading,
+    isFetching,
+  } = useSmartRouterBestTrade({
+    toAsset: toAsset,
+    fromAsset: asset,
+    chainId,
+    account: address,
+    amount: amount,
+  });
+
+  const swapCallParams = useMemo(() => {
+    if (!trade || !chainId || !allowance || !smartWalletDetails || !address)
+      return undefined;
+
+    const options = getSmartWalletOptions(
+      address,
+      true,
+      allowance,
+      smartWalletDetails as never,
+      chainId,
+      {
+        inputAsset: asset.wrapped.address,
+        feeAsset: feeAsset.wrapped.address,
+        outputAsset: toAsset.wrapped.address,
+      },
+    );
+    return SmartWalletRouter.buildSmartWalletTrade(trade, options);
+  }, [
+    trade,
+    address,
+    chainId,
+    allowance,
+    smartWalletDetails,
+    toAsset,
+    asset,
+    feeAsset,
+  ]);
+
+  const swap = useCallback(async () => {
+    setTx(undefined);
+    if (!swapCallParams || !address || !allowance) return;
+
+    const windowClient = await wagmiconfig.connector?.getWalletClient();
+    const externalOps = swapCallParams.externalUserOps;
+
+    if (externalOps.length > 0) {
+      setTXState(ConfirmModalState.APPROVING_TOKEN);
+      for (const externalOp of externalOps) {
+        await SmartWalletRouter.sendTransactionFromRelayer(
+          chainId,
+          externalOp as never,
+          {
+            externalClient: windowClient,
+          },
+        );
+      }
+    }
+    setTXState(ConfirmModalState.PERMITTING);
+    const { domain, types, values } = swapCallParams.smartWalletTypedData;
+
+    await signTypedDataAsync({
+      account: address,
+      domain,
+      types,
+      message: values,
+      primaryType: "ECDSAExec",
+    })
+      .then(async (signature) => {
+        setTXState(ConfirmModalState.SIGNED);
+        const signatureEncoded = defaultAbiCoder.encode(
+          ["uint256", "bytes"],
+          [chainId, signature],
+        );
+
+        if (values.nonce === 0n) {
+          const walletDeploymentOp =
+            await SmartWalletRouter.encodeWalletCreationOp(
+              [address],
+              Deployments[chainId].ECDSAWalletFactory,
+            );
+
+          const response = await SmartWalletRouter.sendTransactionFromRelayer(
+            chainId,
+            walletDeploymentOp as any,
+          );
+          console.log(response);
+        }
+        const tradeEncoded = await SmartWalletRouter.encodeSmartRouterTrade(
+          [values, signatureEncoded as any],
+          smartWalletDetails?.address!,
+          chainId,
+        );
+        console.log(tradeEncoded, values);
+
+        await Promise.resolve(() =>
+          setTimeout(() => setTXState(ConfirmModalState.EXECUTING), 500),
+        );
+        let response = null;
+        if (
+          swapCallParams.config.SmartWalletTradeType ===
+          RouterTradeType.SmartWalletTradeWithPermit2
+        ) {
+          response = await SmartWalletRouter.sendTransactionFromRelayer(
+            chainId,
+            tradeEncoded as any,
+          );
+        } else {
+          response = await SmartWalletRouter.sendTransactionFromRelayer(
+            chainId,
+            tradeEncoded as any,
+            {
+              externalClient: windowClient as any,
+            },
+          );
+        }
+        setTx(response as any);
+        setTXState(ConfirmModalState.COMPLETED);
+        refetch();
+        console.log(response);
+        return response as TransactionReceipt;
+      })
+      .catch((err: unknown) => {
+        console.log(err);
+        setTXState(ConfirmModalState.FAILED);
+        if (err instanceof UserRejectedRequestError) {
+          throw new TransactionRejectedRpcError(Error("Transaction rejected"));
+        }
+        throw new Error(`Swap Failed ${err as string}`);
+      })
+      .catch(() => setTXState(ConfirmModalState.FAILED));
+  }, [
+    swapCallParams,
+    address,
+    signTypedDataAsync,
+    chainId,
+    allowance,
+    smartWalletDetails,
+  ]);
+
+  useEffect(() => {
+    if (isConnected && currenChain?.id !== chainId) {
+      switchNetwork?.(chainId);
+    }
+
+    if (txState === ConfirmModalState.FAILED) {
+      setTx(undefined);
+      const i = setTimeout(
+        () => setTXState(ConfirmModalState.REVIEWING),
+        40000,
+      );
+      return () => clearTimeout(i);
+    }
+  }, [isConnected, switchNetwork, currenChain, chainId, txState]);
 
   return (
     <div className="-m-[100px] flex grid h-screen items-center justify-center">
@@ -180,8 +398,8 @@ export default function Home() {
                   type="number"
                   className="h-14 flex-1 grow rounded-md bg-gray-100 px-6 text-right outline-none focus:bg-gray-200"
                   value={
-                    // fees ? Number(fees?.gasCost?.toExact()).toFixed(5) : ""
-                    ""
+                    // fees ? Number(fees?.gasCost?.toExact()).toFixed(5) : "0.00"
+                    "0.00"
                   }
                   placeholder="choose your fee asset"
                   disabled
@@ -202,10 +420,10 @@ export default function Home() {
                   type="number"
                   className="h-14 flex-1 grow rounded-md bg-gray-100 px-6 text-right outline-none focus:bg-gray-200"
                   value={
-                    // trade
-                    //   ? Number(trade?.outputAmount?.toExact()).toFixed(5)
-                    //   : ""
-                    ""
+                    trade
+                      ? Number(trade?.outputAmount?.toExact()).toFixed(5)
+                      : ""
+                    // ""
                   }
                   placeholder="you recieve 0.00"
                   disabled
@@ -226,15 +444,13 @@ export default function Home() {
                 {/* biome-ignore lint/a11y/useButtonType: <explanation> */}
                 <button
                   className={`my-2 w-full rounded-md ${primaryColor} py-4 font-medium text-white hover:${secondaryColor}`}
-                  // onClick={swap}
-                  onClick={() => null}
+                  onClick={swap}
                 >
                   <div className=" flex w-full items-center justify-center">
                     <p className="mx-2 text-gray-300">
-                      {/* {allowance?.t0Allowance.needsApproval
-                      ? "Approve Smart Router"
-                      : transactionStatusDisplay} */}
-                      Action
+                      {allowance?.t0Allowance.needsApproval
+                        ? "Approve Smart Router"
+                        : transactionStatusDisplay}
                     </p>
                     {/* <LoadingSpinner
                     opacity={
@@ -256,14 +472,13 @@ export default function Home() {
                   {`${formatAssetBalance} ${asset.symbol}`}
                 </div>
               </div>
-              {feeAsset.symbol !== asset.symbol && (
-                <div className="mb-2 flex w-full justify-between">
-                  <div className="bold  text-ml">{`Your ${feeAsset.symbol} Balance`}</div>
-                  <div className="overflow-ellipsis text-[17px]  ">
-                    {`${formatFeeBalance} ${feeAsset.symbol}`}
-                  </div>
+
+              <div className="mb-2 flex w-full justify-between">
+                <div className="bold  text-ml">{`Your ${toAsset.symbol} Balance`}</div>
+                <div className="overflow-ellipsis text-[17px]  ">
+                  {`${formatToAssetBalance} ${toAsset.symbol}`}
                 </div>
-              )}
+              </div>
             </div>
           </div>
         </div>
