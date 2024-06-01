@@ -93,15 +93,6 @@ export default function Home() {
     [txState],
   );
 
-  const handleamount2 = useCallback(
-    async (e: any) => {
-      if (txState === ConfirmModalState.EXECUTING) {
-        setInputValue(e);
-      }
-    },
-    [txState],
-  );
-
   const { data: smartWalletDetails, refetch } = useQuery({
     queryKey: ["smartWalletDetails", address, chainId ?? 0],
     queryFn: async () => {

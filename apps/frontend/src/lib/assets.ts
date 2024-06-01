@@ -54,7 +54,7 @@ export type AssetConfig = {
 };
 
 export const assets: Record<Asset, AssetConfig> = {
-  BUSD: { chains: [Chain.Aurora] },
-  WBNB: { chains: [Chain.Avalanche] },
+  BUSD: { chains: [Chain.BNBChain] },
+  WBNB: { chains: [Chain.Ethereum] },
   CAKE: { chains: [Chain.BNBChain] },
 };
