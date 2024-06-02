@@ -22,6 +22,10 @@ export enum Asset {
   CAKE = "CAKE",
 }
 
+export enum NeonAsset {
+  USDT = "USDT",
+}
+
 export const tickerToAddress: Record<string, string> = {
   [Asset.BUSD]: "0xaB1a4d4f1D656d2450692D237fdD6C7f9146e814",
   [Asset.WBNB]: "0xae13d989daC2f0dEbFf460aC112a837C89BAa7cd",
@@ -47,14 +51,25 @@ export const assetsBaseConfig: Record<Asset, ERC20Token> = {
   ),
 };
 
-export const supportedAssets = [Asset.BUSD, Asset.WBNB, Asset.CAKE];
+export const supportedAssets = [
+  Asset.BUSD,
+  Asset.WBNB,
+  Asset.CAKE,
+  NeonAsset.USDT,
+];
 
 export type AssetConfig = {
   chains: Chain[];
 };
 
-export const assets: Record<Asset, AssetConfig> = {
+export const fromAssets: Record<string, AssetConfig> = {
   BUSD: { chains: [Chain.BNBChain] },
-  WBNB: { chains: [Chain.Ethereum] },
+};
+
+export const feeAssets: Record<string, AssetConfig> = {
+  BUSD: { chains: [Chain.BNBChain] },
+};
+
+export const toAssets: Record<string, AssetConfig> = {
   CAKE: { chains: [Chain.BNBChain] },
 };

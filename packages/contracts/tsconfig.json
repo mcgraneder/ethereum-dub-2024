@@ -11,7 +11,7 @@
 		"composite": true,
 		"lib": ["ES2022"]
 	},
-	"include": ["./src", "./utils", "typechain/**/*", "scripts/t.ts"],
+	"include": ["./src", "./utils", "./typechain-types/**/*", "./scripts"],
 	"files": [
 		"./hardhat.config.ts",
 		"./utils/env.ts",

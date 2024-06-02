@@ -403,12 +403,12 @@ function parseContractError<T>(err: T): string {
   ).reason;
 }
 
-main({
-  baseAsset: "CAKE",
-  quoteAsset: "BUSD",
-  feeAsset: "CAKE",
-  amountIn: BigInt(1 * 10 ** 18),
-}).catch((error) => {
-  console.error(error);
-  process.exitCode = 1;
-});
+// main({
+//   baseAsset: "CAKE",
+//   quoteAsset: "BUSD",
+//   feeAsset: "CAKE",
+//   amountIn: BigInt(1 * 10 ** 18),
+// }).catch((error) => {
+//   console.error(error);
+//   process.exitCode = 1;
+// });

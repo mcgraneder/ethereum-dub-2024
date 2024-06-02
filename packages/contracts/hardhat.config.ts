@@ -25,6 +25,14 @@ const config: HardhatUserConfig = {
       // url: "http://127.0.0.1:8545",
       chainId: 31337,
     },
+    neondevnet: {
+      url: "https://neon-evm-devnet.drpc.org",
+      accounts: [
+        "3ea25ee2bf415441be31cfe484dc0f6f7b056902f073a83bbc9083211c4a9368",
+        ...env.getAccounts("bnb-testnet"),
+      ],
+      chainId: 245022926,
+    },
     ethereumMainnet: {
       url: "https://mainnet.infura.io/v3/e110322e378a4f268172084e63ac8b8d",
       accounts: [
@@ -39,7 +47,7 @@ const config: HardhatUserConfig = {
         ...env.getAccounts("ethereum-testnet"),
       ],
     },
-    
+
     bnbMainnet: {
       url: "https://bsc-dataseed1.binance.org/",
       accounts: [
@@ -53,7 +61,7 @@ const config: HardhatUserConfig = {
         "3ea25ee2bf415441be31cfe484dc0f6f7b056902f073a83bbc9083211c4a9368",
         ...env.getAccounts("bnb-testnet"),
       ],
-    }
+    },
   },
 
   namedAccounts: {
@@ -136,6 +144,7 @@ const config: HardhatUserConfig = {
         "bscTestnet",
       ]),
       "base-goerli": "PLACEHOLDER_STRING",
+      neonevm: "test",
     },
     customChains: [
       {
@@ -144,6 +153,14 @@ const config: HardhatUserConfig = {
         urls: {
           apiURL: "https://api-goerli.basescan.org/api",
           browserURL: "https://goerli.basescan.org",
+        },
+      },
+      {
+        network: "neonevm",
+        chainId: 245022926,
+        urls: {
+          apiURL: "https://devnet-api.neonscan.org/hardhat/verify",
+          browserURL: "https://devnet.neonscan.org",
         },
       },
     ],

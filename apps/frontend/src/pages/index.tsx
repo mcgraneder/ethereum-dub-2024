@@ -24,7 +24,14 @@ import {
 } from "@eth-dub-2024/router-sdk";
 import { useQuery } from "@tanstack/react-query";
 import { type Currency, CurrencyAmount } from "@pancakeswap/sdk";
-import { type Asset, assets, assetsBaseConfig } from "~/lib/assets";
+import {
+  type Asset,
+  assets,
+  assetsBaseConfig,
+  feeAssets,
+  toAssets,
+  fromAssets,
+} from "~/lib/assets";
 import { useTokenBalance } from "~/hooks/useBalance";
 import {
   TransactionRejectedRpcError,
@@ -67,9 +74,9 @@ export default function Home() {
 
   const [tx, setTx] = useState<TransactionReceipt | undefined>(undefined);
   const [inputValue, setInputValue] = useState("");
-  const [asset, setAsset] = useState<Currency>(assetsBaseConfig.CAKE);
-  const [toAsset, setToAsset] = useState<Currency>(assetsBaseConfig.BUSD);
-  const [feeAsset, setFeeAsset] = useState<Currency>(assetsBaseConfig.CAKE);
+  const [asset] = useState<Currency>(assetsBaseConfig.CAKE);
+  const [toAsset] = useState<Currency>(assetsBaseConfig.BUSD);
+  const [feeAsset] = useState<Currency>(assetsBaseConfig.CAKE);
 
   const assetBalance = useTokenBalance(asset.wrapped.address);
   const toAssetBalance = useTokenBalance(toAsset.wrapped.address);
@@ -95,17 +102,6 @@ export default function Home() {
         Number(inputValue) * 10 ** asset.decimals,
       ),
     [asset, inputValue],
-  );
-
-  const handleAssetChange = useCallback(
-    (
-      e: React.ChangeEvent<HTMLSelectElement>,
-      setFunction: React.Dispatch<React.SetStateAction<Currency>>,
-    ) => {
-      const newAsset = assetsBaseConfig[e.target.value as Asset];
-      setFunction(newAsset);
-    },
-    [],
   );
 
   const handleAmount = useCallback(
@@ -165,7 +161,7 @@ export default function Home() {
       address && asset && chainId && smartWalletDetails && amount,
     ),
   });
-  const deferQuotientRaw = useDeferredValue(amount.quotient.toString());
+
   const {
     data: trade,
     isLoading,
@@ -369,9 +365,9 @@ export default function Home() {
                 <select
                   className="absolute h-14 grow rounded-md bg-transparent pl-6 pr-12 outline-none "
                   value={asset.symbol}
-                  onChange={(e) => handleAssetChange(e, setAsset)}
+                  onChange={(e) => null}
                 >
-                  {Object.entries(assets).map(([k], i) => {
+                  {Object.entries(fromAssets).map(([k], i) => {
                     return <option key={`${k}`}>{k}</option>;
                   })}
                 </select>
@@ -384,13 +380,34 @@ export default function Home() {
                   required
                 />
               </div>
+              {/* <div className="relative my-2 flex w-full items-center rounded-md bg-gray-100 focus-within:bg-gray-200">
+                <select
+                  className="absolute h-14 grow rounded-md bg-transparent pl-6 pr-12 outline-none "
+                  value={chain}
+                  onChange={(e) => null}
+                >
+                  {Object.entries(chainss).map(([k], i) => {
+                    return <option key={`2-${k}`}>{k}</option>;
+                  })}
+                </select>
+                <input
+                  type="number"
+                  className="h-14 flex-1 grow rounded-md bg-gray-100 px-6 text-right outline-none focus:bg-gray-200"
+                  value={
+                    // fees ? Number(fees?.gasCost?.toExact()).toFixed(5) : "0.00"
+                    "0.00"
+                  }
+                  placeholder="choose your fee asset"
+                  disabled
+                />
+              </div> */}
               <div className="relative my-2 flex w-full items-center rounded-md bg-gray-100 focus-within:bg-gray-200">
                 <select
                   className="absolute h-14 grow rounded-md bg-transparent pl-6 pr-12 outline-none "
                   value={feeAsset.symbol}
-                  onChange={(e) => handleAssetChange(e, setFeeAsset)}
+                  onChange={(e) => null}
                 >
-                  {Object.entries(assets).map(([k], i) => {
+                  {Object.entries(feeAssets).map(([k], i) => {
                     return <option key={`2-${k}`}>{k}</option>;
                   })}
                 </select>
@@ -410,9 +427,9 @@ export default function Home() {
                 <select
                   className="absolute h-14 grow rounded-md bg-transparent pl-6 pr-12 outline-none "
                   value={toAsset.symbol}
-                  onChange={(e) => handleAssetChange(e, setToAsset)}
+                  onChange={(e) => null}
                 >
-                  {Object.entries(assets).map(([k], i) => {
+                  {Object.entries(toAssets).map(([k], i) => {
                     return <option key={`3-${k}`}>{k}</option>;
                   })}
                 </select>

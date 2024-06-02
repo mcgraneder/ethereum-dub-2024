@@ -1,5 +1,5 @@
 import { ChainId } from '@pancakeswap/chains'
-import { bscTestnet, bsc as bsc_, sepolia, mainnet, type Chain } from 'viem/chains'
+import { bscTestnet, bsc as bsc_, sepolia, mainnet, type Chain, neonDevnet } from 'viem/chains'
 
 export enum ExtendedChainId {
   LOCAL = 31337,
@@ -20,7 +20,7 @@ const bsc = {
   },
 } satisfies Chain
 
-export const CHAINS = [bsc, bscTestnet, mainnet, sepolia]
+export const CHAINS = [bsc, bscTestnet, mainnet, sepolia, neonDevnet]
 
 export const PUBLIC_NODES: Record<number, string[]> = {
   [ChainId.BSC]: [
@@ -36,13 +36,14 @@ export const PUBLIC_NODES: Record<number, string[]> = {
     'https://cloudflare-eth.com',
   ].filter(Boolean),
   [ChainId.SEPOLIA]: ['https://rpc.sepolia.org'],
-  [ExtendedChainId.LOCAL]: ['http://127.0.0.1:8545/'],
+  [245022926]: ['https://neon-evm-devnet.drpc.org'],
 } satisfies Record<number, string[]>
 
 export const ChainsAdapter: { [chainId: number]: Chain } = {
   [ChainId.ETHEREUM]: mainnet,
   [ChainId.BSC]: bsc_,
   [ChainId.SEPOLIA]: sepolia,
+  [245022926]: neonDevnet,
 }
 
 export const allChains = Object.values(ChainsAdapter)

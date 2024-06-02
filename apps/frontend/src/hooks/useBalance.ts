@@ -1,3 +1,4 @@
+import { Deployments } from "@eth-dub-2024/router-sdk";
 import BigNumber from "bignumber.js";
 import { useMemo } from "react";
 import {
@@ -7,6 +8,7 @@ import {
   useChainId,
   useContractRead,
 } from "wagmi";
+import { assetsBaseConfig } from "~/lib/assets";
 
 export const useTokenBalance = (
   tokenAddress: Address,
@@ -18,7 +20,7 @@ export const useTokenBalance = (
   const { data, status, ...rest } = useContractRead({
     chainId: chainId,
     abi: erc20ABI,
-    address: tokenAddress,
+    address: assetsBaseConfig[chainId]?.[tokenAddress] ?? "0x",
     functionName: "balanceOf",
     args: [overrideAddress ?? account ?? "0x"],
     enabled: overrideAddress ? !!overrideAddress : !!account,

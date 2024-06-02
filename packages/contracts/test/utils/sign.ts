@@ -8,11 +8,6 @@ import {
   buildSignature,
   buildSignatureBytes,
 } from "./buildSignatures";
-import {
-  SignaturePartType,
-  encodeSignature,
-  optimize2SignersTopology,
-} from "./encode";
 
 export enum TxType {
   SourceChainOp = "SourceChainOp",

@@ -44,11 +44,18 @@ export class ClasicTrade implements Command {
         [account, smartWalletDetails.address, amountIn, inputToken],
         smartWalletDetails.address,
       )
+      if (routerRecipient === smartRouterAddress) {
+        const { calldata, value } = SwapRouter.swapCallParameters(trade, tradeOptions as never)
+        planner.addUserOperation(OperationType.APPROVE, [routerRecipient, BigInt(amountIn)], inputToken)
+        planner.addUserOperationFromCall([{ address: routerRecipient, calldata, value }])
+      }
     }
-    if (routerRecipient === smartRouterAddress) {
-      const { calldata, value } = SwapRouter.swapCallParameters(trade, tradeOptions as never)
-      planner.addUserOperation(OperationType.APPROVE, [routerRecipient, BigInt(amountIn)], inputToken)
-      planner.addUserOperationFromCall([{ address: routerRecipient, calldata, value }])
+    if (this.tradeType === RouterTradeType.SmartWalletNeonEvmTrade) {
+      planner.addUserOperation(
+        OperationType.WALLET_TRANSFER_FROM,
+        [account, smartWalletDetails.address, amountIn, inputToken],
+        smartWalletDetails.address,
+      )
     }
   }
 }

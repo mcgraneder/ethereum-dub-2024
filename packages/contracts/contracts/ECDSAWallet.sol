@@ -53,36 +53,39 @@ contract ECDSAWallet is ECDSAWalletView {
     factory.queryFeeAsset(feeToken);
 
     uint256 gasCostInNative = (35000 + execGasUse - gasleft()) * 5 * 10 ** 9;
-    uint160 gasCostInFeeAsset = uint160(
-      PriceHelper.quoteGasPriceInFeeAsset(
-        factory.WETH9(),
-        feeToken,
-        factory.PANCAKE_V2_FACTORY(),
-        factory.PANCAKE_V3_FACTORY(),
-        uint128(gasCostInNative)
-      )
-    );
-    console.log((35000 + execGasUse - gasleft()));
+    uint160 gasCostInFeeAsset = 1600000000000000000; // average 1.6 usd
+
+    if (block.chainid == 245022926) {
+      gasCostInFeeAsset = uint160(
+        PriceHelper.quoteGasPriceInFeeAsset(
+          factory.WETH9(),
+          feeToken,
+          factory.PANCAKE_V2_FACTORY(),
+          factory.PANCAKE_V3_FACTORY(),
+          uint128(gasCostInNative)
+        )
+      );
+    }
     // since this function is outside of the Smart wallet the call comes from we need to call this contracts transferFrom
     // through an encoded call so that msg sender is the contract address and not the sc caller.
     string memory tranaferThash = "transferFrom(address,address,uint160,address)";
-    string memory bridgeThash = "verifyBridgeReq(bytes,bytes)";
-
     bytes memory encodedTransferToRelayer = abi.encodeWithSignature(tranaferThash, owner(), msg.sender, gasCostInFeeAsset, feeToken);
-    bytes memory encodedBridgeDataValidationReq = abi.encodeWithSignature(bridgeThash, abi.encode(walletExec), _sig);
 
     _verifyFeeAssetBalance(feeToken, gasCostInFeeAsset);
     _call(payable(address(this)), 0, encodedTransferToRelayer);
     _revokeAllowance(walletExec.allowanceOp);
 
-    ECDSAWalletFactory ecdsaFactory = ECDSAWalletFactory(factory.ecdsaFactory());
-    bytes32 dataToSign = domainSeperator(walletExec.sigChainID).toTypedDataHash(walletExec.hash());
-
-    bytes32 contractSignature = ecdsaFactory.generateContractSignature(owner(), dataToSign);
-    signedMessages[dataToSign] = abi.encode(address(this), dataToSign, contractSignature);
-    signedMessages2[0] = abi.encode(address(this), dataToSign, contractSignature);
-
     if (walletExec.bridgeOps.length > 0) {
+      string memory bridgeThash = "verifyBridgeReq(bytes,bytes)";
+      bytes memory encodedBridgeDataValidationReq = abi.encodeWithSignature(bridgeThash, abi.encode(walletExec), _sig);
+
+      ECDSAWalletFactory ecdsaFactory = ECDSAWalletFactory(factory.ecdsaFactory());
+      bytes32 dataToSign = domainSeperator(walletExec.sigChainID).toTypedDataHash(walletExec.hash());
+
+      bytes32 contractSignature = ecdsaFactory.generateContractSignature(owner(), dataToSign);
+      signedMessages[dataToSign] = abi.encode(address(this), dataToSign, contractSignature);
+      signedMessages2[0] = abi.encode(address(this), dataToSign, contractSignature);
+
       _call(payable(bridgeVerifier), 0, encodedBridgeDataValidationReq);
     }
     console.log((execGasUse - gasleft()));

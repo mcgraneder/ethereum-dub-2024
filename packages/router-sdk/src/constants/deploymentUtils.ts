@@ -1,5 +1,5 @@
 import { ChainId } from '@pancakeswap/chains'
-import type { Address } from 'viem'
+import { zeroAddress, type Address } from 'viem'
 
 export enum Contracts {
   ECDSAWalletFactory = 'ECDSAWalletFactory',
@@ -37,5 +37,16 @@ export const Deployments: Deployments = {
     PancakeSwapV3Facotry: '0x0BFbCF9fa4f9C56B0F40a671Ad40E0805A091865',
     PancakeSwapV2Facotry: '0x1bdc540dEB9Ed1fA29964DeEcCc524A8f5e2198e',
     WETH9: '0xfFf9976782d46CC05630D1f6eBAb18b2324d6B14',
+  },
+  [245022926]: {
+    //     ECDSAWalletFactory: "0x7dF8BEaeD25fe010655Da27D7393A317e35C7361",
+    //     SmartWalletFactory: "0xb5C56531Bdd3A05EC4901a30fF12c98Ef31925C5",
+    ECDSAWalletFactory: '0xba350c11Cb19bA4AFDcc9aD0698fE495F982bAF4',
+    SmartWalletFactory: '0x36Aef0c16b030BC508C8d99867ca3b2be1dF9fA2',
+    Cake: '0x4860ee416b52b4769CdC2E7876b09c6B77E3BD30',
+    Busd: '0x903fC5f46287e7B3C79719c3ce8F4EDBAC8b8b54',
+    PancakeSwapV3Facotry: zeroAddress,
+    PancakeSwapV2Facotry: zeroAddress,
+    WETH9: '0x11adC2d986E334137b9ad0a0F290771F31e9517F',
   },
 }

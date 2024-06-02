@@ -92,7 +92,7 @@ function parseContractError<T>(err: T): string {
   ).reason;
 }
 
-// main().catch((error) => {
-//   console.error(error);
-//   process.exitCode = 1;
-// });
+main().catch((error) => {
+  console.error(error);
+  process.exitCode = 1;
+});
