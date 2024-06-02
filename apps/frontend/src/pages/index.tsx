@@ -184,7 +184,6 @@ export default function Home() {
         feeAsset: feeAsset.symbol,
         inputCurrency: asset,
         outputCurrency: toAsset,
-        chainId,
       });
     },
 
