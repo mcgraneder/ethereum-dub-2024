@@ -77,6 +77,5 @@ export type SmartWalletGasParams = {
   feeAsset: string
   inputCurrency: Currency
   outputCurrency: Currency
-  chainId: ChainId
 }
 export type SmartWalletDetails = { address: Address; nonce: bigint; wallet: GetContractReturnType<typeof walletAbi> }
