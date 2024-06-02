@@ -118,11 +118,7 @@ export default function Home() {
     queryKey: ["smartWalletDetails", address, chainId ?? 0],
     queryFn: async () => {
       if (!address || !chainId) return;
-      return SmartWalletRouter.getUserSmartWalletDetails(
-        address,
-        chainId,
-        RouterTradeType.SmartWalletTradeWithPermit2,
-      );
+      return SmartWalletRouter.getUserSmartWalletDetails(address, chainId);
     },
     retry: false,
     refetchOnWindowFocus: false,
@@ -219,6 +215,7 @@ export default function Home() {
         feeAsset: feeAsset.wrapped.address,
         outputAsset: toAsset.wrapped.address,
       },
+      RouterTradeType.SmartWalletTradeWithPermit2,
     );
     return SmartWalletRouter.buildSmartWalletTrade(trade, options);
   }, [
