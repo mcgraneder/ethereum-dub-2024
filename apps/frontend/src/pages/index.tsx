@@ -44,6 +44,7 @@ import { wagmiconfig } from "./_app";
 import { getSmartWalletOptions } from "~/utils/getSmartWalletOptions";
 import { defaultAbiCoder } from "@ethersproject/abi";
 import { useTheme } from "~/hooks/useTheme";
+import { useRouter } from "next/router";
 
 export enum ConfirmModalState {
   REVIEWING = -1,
@@ -318,6 +319,12 @@ export default function Home() {
     }
   }, [isConnected, switchNetwork, currenChain, chainId, txState]);
 
+  const router = useRouter();
+
+  const navigateTo = (path) => {
+    router.push(path);
+  };
+
   return (
     <div className="-m-[100px] flex grid h-screen items-center justify-center">
       {!address ? (
@@ -329,15 +336,35 @@ export default function Home() {
           {isConnecting ? "Connecting..." : "Connect Wallet"}
         </button>
       ) : (
-        <div className="mx-auto mt-[200px] w-[600px] items-center">
+        <div className="mx-auto mb-[50px] mt-[200px] w-[600px] items-center">
+          <div className="mb-4 flex w-full justify-between">
+            <button
+              className={`mx-1 w-full rounded-md ${primaryColor} px-4 py-2 font-medium text-white hover:${secondaryColor}`}
+              onClick={() => navigateTo("/solana-swap")}
+            >
+              Solana Swap
+            </button>
+            <button
+              className={`mx-1 w-full rounded-md ${primaryColor} px-4 py-2 font-medium text-white hover:${secondaryColor}`}
+              onClick={() => navigateTo("/cross-chain-swap")}
+            >
+              Cross-Chain Swap
+            </button>
+            <button
+              className={`mx-1 w-full rounded-md ${primaryColor} px-4 py-2 font-medium text-white hover:${secondaryColor}`}
+              onClick={() => navigateTo("/solana-cross-chain-swap")}
+            >
+              Solana Cross-Chain
+            </button>
+          </div>
+
           <div className="">
             <span className="font-medium text-gray-700">
               Your Smart Wallet Address
             </span>
             <div className="mt-1 flex">
-              <span className="flex h-14  grow items-center justify-between rounded-md bg-gray-100 px-6">
+              <span className="flex h-14 grow items-center justify-between rounded-md bg-gray-100 px-6">
                 {smartWalletDetails?.address}
-
                 <CopyIcon
                   className="ml-2 hover:cursor-pointer"
                   onClick={async () => {
@@ -356,14 +383,12 @@ export default function Home() {
               </button>
             </div>
           </div>
-          <div className="mt-4 flex flex-col items-center justify-center">
-            {/* <SliderToggleButton /> */}
-            <div className="w-full">
-              {/* <SliderToggleButton /> */}
 
+          <div className="mt-4 flex flex-col items-center justify-center">
+            <div className="w-full">
               <div className="relative my-2 flex w-full items-center rounded-md bg-gray-100 focus-within:bg-gray-200">
                 <select
-                  className="absolute h-14 grow rounded-md bg-transparent pl-6 pr-12 outline-none "
+                  className="absolute h-14 grow rounded-md bg-transparent pl-6 pr-12 outline-none"
                   value={asset.symbol}
                   onChange={(e) => null}
                 >
@@ -375,35 +400,15 @@ export default function Home() {
                   type="number"
                   className="h-14 grow rounded-md bg-gray-100 px-6 text-right outline-none focus:bg-gray-200"
                   value={inputValue}
-                  placeholder="enter an amount to swap"
+                  placeholder="Enter an amount to swap"
                   onChange={handleAmount}
                   required
                 />
               </div>
-              {/* <div className="relative my-2 flex w-full items-center rounded-md bg-gray-100 focus-within:bg-gray-200">
-                <select
-                  className="absolute h-14 grow rounded-md bg-transparent pl-6 pr-12 outline-none "
-                  value={chain}
-                  onChange={(e) => null}
-                >
-                  {Object.entries(chainss).map(([k], i) => {
-                    return <option key={`2-${k}`}>{k}</option>;
-                  })}
-                </select>
-                <input
-                  type="number"
-                  className="h-14 flex-1 grow rounded-md bg-gray-100 px-6 text-right outline-none focus:bg-gray-200"
-                  value={
-                    // fees ? Number(fees?.gasCost?.toExact()).toFixed(5) : "0.00"
-                    "0.00"
-                  }
-                  placeholder="choose your fee asset"
-                  disabled
-                />
-              </div> */}
+
               <div className="relative my-2 flex w-full items-center rounded-md bg-gray-100 focus-within:bg-gray-200">
                 <select
-                  className="absolute h-14 grow rounded-md bg-transparent pl-6 pr-12 outline-none "
+                  className="absolute h-14 grow rounded-md bg-transparent pl-6 pr-12 outline-none"
                   value={feeAsset.symbol}
                   onChange={(e) => null}
                 >
@@ -414,18 +419,15 @@ export default function Home() {
                 <input
                   type="number"
                   className="h-14 flex-1 grow rounded-md bg-gray-100 px-6 text-right outline-none focus:bg-gray-200"
-                  value={
-                    // fees ? Number(fees?.gasCost?.toExact()).toFixed(5) : "0.00"
-                    "0.00"
-                  }
-                  placeholder="choose your fee asset"
+                  value="0.00"
+                  placeholder="Choose your fee asset"
                   disabled
                 />
               </div>
 
               <div className="relative my-2 flex w-full items-center rounded-md bg-gray-100 focus-within:bg-gray-200">
                 <select
-                  className="absolute h-14 grow rounded-md bg-transparent pl-6 pr-12 outline-none "
+                  className="absolute h-14 grow rounded-md bg-transparent pl-6 pr-12 outline-none"
                   value={toAsset.symbol}
                   onChange={(e) => null}
                 >
@@ -440,64 +442,38 @@ export default function Home() {
                     trade
                       ? Number(trade?.outputAmount?.toExact()).toFixed(5)
                       : ""
-                    // ""
                   }
-                  placeholder="you recieve 0.00"
+                  placeholder="You receive 0.00"
                   disabled
                 />
               </div>
-              {/* <TransactionCard
-              tx={tx}
-              txState={txState}
-              asset={asset}
-              toAsset={toAsset}
-              feeAsset={feeAsset}
-              fees={fees as never}
-              trade={trade}
-              inputValue={inputValue}
-            /> */}
 
               <div className="my-2 flex w-full items-center">
-                {/* biome-ignore lint/a11y/useButtonType: <explanation> */}
                 <button
                   className={`my-2 w-full rounded-md ${primaryColor} py-4 font-medium text-white hover:${secondaryColor}`}
                   onClick={swap}
                 >
-                  <div className=" flex w-full items-center justify-center">
+                  <div className="flex w-full items-center justify-center">
                     <p className="mx-2 text-gray-300">
                       {allowance?.t0Allowance.needsApproval
                         ? "Approve Smart Router"
                         : transactionStatusDisplay}
                     </p>
-                    {/* <LoadingSpinner
-                    opacity={
-                      (txState !== ConfirmModalState.COMPLETED &&
-                        txState !== ConfirmModalState.REVIEWING) ||
-                      isFetching ||
-                      isLoading
-                        ? 1
-                        : 0
-                    }
-                    size="24px"
-                  /> */}
                   </div>
                 </button>
               </div>
+
               <div className="mb-2 flex w-full justify-between">
-                <div className="bold   text-ml">{`Your ${asset.symbol} Balance`}</div>
-                <div className="overflow-ellipsis text-[17px]   ">
-                  {`${formatAssetBalance} ${asset.symbol}`}
-                </div>
+                <div className="bold text-ml">{`Your ${asset.symbol} Balance`}</div>
+                <div className="overflow-ellipsis text-[17px]">{`${formatAssetBalance} ${asset.symbol}`}</div>
               </div>
 
               <div className="mb-2 flex w-full justify-between">
-                <div className="bold  text-ml">{`Your ${toAsset.symbol} Balance`}</div>
-                <div className="overflow-ellipsis text-[17px]  ">
-                  {`${formatToAssetBalance} ${toAsset.symbol}`}
-                </div>
-                {/* <div className="bold  text-ml">{tx?.transactionHash}</div> */}
+                <div className="bold text-ml">{`Your ${toAsset.symbol} Balance`}</div>
+                <div className="overflow-ellipsis text-[17px]">{`${formatToAssetBalance} ${toAsset.symbol}`}</div>
               </div>
-              <div className="bold  text-ml">{tx?.transactionHash}</div>
+
+              <div className="bold text-ml">{tx?.transactionHash}</div>
             </div>
           </div>
         </div>
