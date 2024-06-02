@@ -6,6 +6,7 @@ import {
   mainnet,
   type Chain,
   neonDevnet,
+  arbitrumSepolia,
 } from "viem/chains";
 
 export enum ExtendedChainId {
@@ -27,9 +28,16 @@ const bsc = {
   },
 } satisfies Chain;
 
-export const CHAINS: any = [bsc, bscTestnet, mainnet, sepolia, neonDevnet];
+export const CHAINS: any = [
+  bsc,
+  bscTestnet,
+  mainnet,
+  sepolia,
+  neonDevnet,
+  arbitrumSepolia,
+];
 
-export const PUBLIC_NODES: Record<number, string[]> = {
+export const PUBLIC_NODES: any = {
   [ChainId.BSC]: [
     "https://bsc.publicnode.com",
     "https://binance.llamarpc.com",
@@ -43,6 +51,8 @@ export const PUBLIC_NODES: Record<number, string[]> = {
     "https://cloudflare-eth.com",
   ].filter(Boolean),
   [ChainId.SEPOLIA]: ["https://rpc.sepolia.org"],
+  [ChainId.ARBITRUM_SEPOLIA]: arbitrumSepolia.rpcUrls.default.http as any,
+
   [245022926]: ["https://neon-evm-devnet.drpc.org"],
 } satisfies Record<number, string[]>;
 
@@ -50,6 +60,7 @@ export const ChainsAdapter: { [chainId: number]: Chain } = {
   [ChainId.ETHEREUM]: mainnet,
   [ChainId.BSC]: bsc_,
   [ChainId.SEPOLIA]: sepolia,
+  [ChainId.ARBITRUM_SEPOLIA]: arbitrumSepolia,
   [245022926]: neonDevnet,
 };
 

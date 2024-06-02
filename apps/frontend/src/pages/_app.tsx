@@ -6,6 +6,8 @@ import { SaasProvider } from "@saas-ui/react";
 import { createStorage, createConfig, WagmiConfig } from "wagmi";
 import { MetaMaskConnector } from "wagmi/connectors/metaMask";
 import { bscTestnet } from "wagmi/chains";
+import { neonDevnet } from "viem/chains";
+
 import { publicClient, noopStorage } from "../config/wagmiConfig";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
@@ -21,7 +23,9 @@ export const wagmiconfig = createConfig({
     key: "wagmi_v1.1",
   }),
   autoConnect: false,
-  connectors: [new MetaMaskConnector({ chains: [bscTestnet] })],
+  connectors: [
+    new MetaMaskConnector({ chains: [bscTestnet, neonDevnet as any] }),
+  ],
   publicClient: publicClient,
 });
 

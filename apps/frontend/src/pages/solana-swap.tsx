@@ -1,13 +1,10 @@
-import Head from "next/head";
-import Link from "next/link";
-import { CopyIcon } from "@pancakeswap/uikit";
 import {
-  useCallback,
-  useDeferredValue,
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
+  Deployments,
+  RouterTradeType,
+  SmartWalletRouter,
+} from "@eth-dub-2024/router-sdk";
+import { CopyIcon } from "@pancakeswap/uikit";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   useAccount,
   useChainId,
@@ -17,39 +14,27 @@ import {
   useSignTypedData,
   useSwitchNetwork,
 } from "wagmi";
-import {
-  Deployments,
-  RouterTradeType,
-  SmartWalletRouter,
-} from "@eth-dub-2024/router-sdk";
-import { ChainId } from "@pancakeswap/chains";
 
+import { defaultAbiCoder } from "@ethersproject/abi";
+import { CurrencyAmount, type Currency } from "@pancakeswap/sdk";
 import { useQuery } from "@tanstack/react-query";
-import { type Currency, CurrencyAmount } from "@pancakeswap/sdk";
-import {
-  type Asset,
-  assets,
-  assetsBaseConfigSolana,
-  feeAssets,
-  toAssets,
-  fromAssets,
-  fromAssetsSolana,
-  feeAssetsSolana,
-  toAssetsSolana,
-} from "~/lib/assets";
-import { useTokenBalance } from "~/hooks/useBalance";
+import { useRouter } from "next/router";
 import {
   TransactionRejectedRpcError,
   UserRejectedRequestError,
   type TransactionReceipt,
 } from "viem";
-import useDebounce from "~/hooks/useDebounce";
+import { useTokenBalance } from "~/hooks/useBalance";
 import { useSmartRouterBestTrade } from "~/hooks/useSmartRouterBestTrade";
-import { wagmiconfig } from "./_app";
-import { getSmartWalletOptions } from "~/utils/getSmartWalletOptions";
-import { defaultAbiCoder } from "@ethersproject/abi";
 import { useTheme } from "~/hooks/useTheme";
-import { useRouter } from "next/router";
+import {
+  assetsBaseConfigSolana,
+  feeAssetsSolana,
+  fromAssetsSolana,
+  toAssetsSolana,
+} from "~/lib/assets";
+import { getSmartWalletOptions } from "~/utils/getSmartWalletOptions";
+import { wagmiconfig } from "./_app";
 
 export enum ConfirmModalState {
   REVIEWING = -1,
@@ -66,7 +51,7 @@ export default function Home() {
   const { chain: currenChain } = useNetwork();
 
   const { address, isConnecting, isConnected } = useAccount();
-  const chainId = useChainId();
+  const chainIdd = useChainId();
   const { connect, connectors } = useConnect();
   const { disconnect } = useDisconnect();
 
@@ -80,12 +65,17 @@ export default function Home() {
 
   const [tx, setTx] = useState<TransactionReceipt | undefined>(undefined);
   const [inputValue, setInputValue] = useState("");
-  const [asset] = useState<Currency>(assetsBaseConfigSolana.CAKE);
-  const [toAsset] = useState<Currency>(assetsBaseConfigSolana.BUSD);
-  const [feeAsset] = useState<Currency>(assetsBaseConfigSolana.USDT);
+  const [asset] = useState<any>(assetsBaseConfigSolana?.CAKE as any);
+  const [toAsset] = useState<any>(assetsBaseConfigSolana?.BUSD);
+  const [feeAsset] = useState<any>(assetsBaseConfigSolana?.USDT);
 
   const assetBalance = useTokenBalance(asset.wrapped.address);
   const toAssetBalance = useTokenBalance(toAsset.wrapped.address);
+  //   console.log(allowance);
+  const chainId = useMemo(() => {
+    if (!chainIdd && isConnected) return 245022926;
+    return chainIdd;
+  }, [chainIdd, isConnected]);
 
   const { transactionStatusDisplay, primaryColor, secondaryColor } = useTheme(
     txState,
@@ -167,12 +157,9 @@ export default function Home() {
       address && asset && chainId && smartWalletDetails && amount,
     ),
   });
+  console.log(allowance);
 
-  const {
-    data: trade,
-    isLoading,
-    isFetching,
-  } = useSmartRouterBestTrade({
+  const { data: tradee } = useSmartRouterBestTrade({
     toAsset: toAsset,
     fromAsset: asset,
     chainId,
@@ -180,6 +167,12 @@ export default function Home() {
     amount: amount,
   });
 
+  const trade = useMemo(() => {
+    if (chainId === 245022926) return { inputAmount: amount } as any;
+    return tradee;
+  }, [tradee, chainId, amount]);
+
+  console.log(chainId);
   const swapCallParams = useMemo(() => {
     if (!trade || !chainId || !allowance || !smartWalletDetails || !address)
       return undefined;
@@ -196,7 +189,7 @@ export default function Home() {
         outputAsset: toAsset.wrapped.address,
       },
     );
-    return SmartWalletRouter.buildSmartWalletTrade(trade, options);
+    return SmartWalletRouter.buildSmartWalletTrade(trade as any, options);
   }, [
     trade,
     address,
@@ -212,7 +205,9 @@ export default function Home() {
     setTx(undefined);
     if (!swapCallParams || !address || !allowance) return;
 
-    const windowClient = await wagmiconfig.connector?.getWalletClient();
+    const windowClient = await wagmiconfig.connector?.getWalletClient({
+      chainId,
+    });
     const externalOps = swapCallParams.externalUserOps;
 
     if (externalOps.length > 0) {
@@ -222,7 +217,7 @@ export default function Home() {
           chainId,
           externalOp as never,
           {
-            externalClient: windowClient,
+            externalClient: windowClient as any,
           },
         );
       }
@@ -248,7 +243,7 @@ export default function Home() {
           const walletDeploymentOp =
             await SmartWalletRouter.encodeWalletCreationOp(
               [address],
-              Deployments[chainId].ECDSAWalletFactory,
+              Deployments?.[chainId]!.ECDSAWalletFactory as any,
             );
 
           const response = await SmartWalletRouter.sendTransactionFromRelayer(
@@ -322,7 +317,7 @@ export default function Home() {
 
   const router = useRouter();
 
-  const navigateTo = (path) => {
+  const navigateTo = (path: any) => {
     router.push(path);
   };
 
@@ -340,7 +335,7 @@ export default function Home() {
         // biome-ignore lint/a11y/useButtonType: <explanation>
         <button
           className={`rounded-md ${"bg-indigo-600"} py-4 font-medium text-white hover:${secondaryColor}`}
-          onClick={() => switchNetwork(245022926)}
+          onClick={() => switchNetwork?.(245022926)}
         >
           {"Switch to Neon EVM Devnet"}
         </button>
@@ -350,7 +345,7 @@ export default function Home() {
             {/* biome-ignore lint/a11y/useButtonType: <explanation> */}
             <button
               className={`mx-1 w-full rounded-md ${primaryColor} px-4 py-2 font-medium text-white hover:${secondaryColor}`}
-              onClick={() => navigateTo("/solana-swap")}
+              onClick={() => navigateTo("/")}
             >
               Classic Swap
             </button>
@@ -481,8 +476,8 @@ export default function Home() {
               </div>
 
               <div className="mb-2 flex w-full justify-between">
-                <div className="bold text-ml">{`Your ${toAsset.symbol} Balance`}</div>
-                <div className="overflow-ellipsis text-[17px]">{`${formatToAssetBalance} ${toAsset.symbol}`}</div>
+                <div className="bold text-ml">{`Your ${feeAsset.symbol} Balance`}</div>
+                <div className="overflow-ellipsis text-[17px]">{`${formatToAssetBalance} ${feeAsset.symbol}`}</div>
               </div>
 
               <div className="bold text-ml">{tx?.transactionHash}</div>

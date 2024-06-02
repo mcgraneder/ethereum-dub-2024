@@ -1,17 +1,18 @@
-import type { ChainId } from '@pancakeswap/chains'
+import { ChainId } from '@pancakeswap/chains'
 /* eslint-disable lines-between-class-members */
 import type { TradeType } from '@pancakeswap/sdk'
 import type { SmartRouterTrade } from '@pancakeswap/smart-router'
 import type { PancakeSwapOptions } from '@pancakeswap/universal-router-sdk'
 import type { BaseError } from 'abitype'
 import { ethers } from 'ethers'
-import type { Address } from 'viem'
+import type { Account, Address } from 'viem'
 import { erc20Abi as ERC20ABI, formatTransactionRequest, type Hex, type PublicClient } from 'viem'
-import { bscTestnet } from 'viem/chains'
+import { arbitrumSepolia } from 'viem/chains'
 import { getContractError, getTransactionError, parseAccount } from 'viem/utils'
 import { smartWalletAbi } from './abis/SmartWalletAbi'
 import { OperationType, WalletOperationBuilder, encodeOperation } from './encoder/walletOperations'
 import { permit2TpedData } from './permit/permit2TypedData'
+import { CHAINS } from './provider/chains'
 import { getEthersProvider, getViemClient } from './provider/client'
 import { getPublicClient, getWalletClient } from './provider/walletClient'
 import { ClasicTrade } from './trades/classicTrade'
@@ -82,6 +83,7 @@ export abstract class SmartWalletRouter {
   ) {
     const asyncClient = getPublicClient({ chainId })
     const externalClient = config?.externalClient
+    console.log(chainId, config)
     const client = externalClient || getWalletClient({ chainId })
 
     if (!client.account) throw new AccountNotFoundError()
@@ -100,7 +102,7 @@ export abstract class SmartWalletRouter {
         to: txConfig.to,
         value: txConfig.amount,
         data: txConfig.data,
-        chain: bscTestnet,
+        chain: CHAINS.find((chain) => chainId === chain.id),
         gas: calculateGasMargin(gasE),
         gasPrice,
         account,
@@ -198,6 +200,27 @@ export abstract class SmartWalletRouter {
     const { encodedSelector, encodedInput } = encodeOperation(OperationType.CREATE_WALLET, args)
     const operationCalldata = encodedSelector.concat(encodedInput.substring(2)) as Hex
     return { to, amount: 1.5 * 10 ** 9, data: operationCalldata }
+  }
+
+  public static async encodeTransferToRelayer(args: [Address, bigint], to: Address) {
+    const { encodedSelector, encodedInput } = encodeOperation(OperationType.TRANSFER, args)
+    const operationCalldata = encodedSelector.concat(encodedInput.substring(2)) as Hex
+    const client = getWalletClient({ chainId: ChainId.ARBITRUM_SEPOLIA })
+    // console.log(client)
+    const account = parseAccount(client?.account as Account)
+    console.log(client, account)
+
+    const txHash = await client.sendTransaction({
+      account,
+      to,
+      amount: 0,
+      data: operationCalldata,
+      chain: arbitrumSepolia,
+    })
+    return await getPublicClient({ chainId: ChainId.ARBITRUM_SEPOLIA }).waitForTransactionReceipt({
+      hash: txHash,
+      confirmations: 1,
+    })
   }
 
   public static async encodeSmartRouterTrade(args: [ECDSAExecType, Hex], to: Address, chainId: ChainId) {

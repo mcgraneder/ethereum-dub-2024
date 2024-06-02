@@ -3,13 +3,16 @@ import { mainnet } from "wagmi/chains";
 import { jsonRpcProvider } from "wagmi/providers/jsonRpc";
 import { CHAINS, PUBLIC_NODES } from "./chains";
 
-const mostNodesConfig = Object.values(PUBLIC_NODES).reduce((prev, cur) => {
-  return cur.length > prev ? cur.length : prev;
-}, 0);
+const mostNodesConfig = Object.values(PUBLIC_NODES).reduce(
+  (prev: any, cur: any) => {
+    return cur.length > prev ? cur.length : prev;
+  },
+  0,
+);
 
 const { publicClient, chains } = configureChains(
   CHAINS,
-  Array.from({ length: mostNodesConfig })
+  Array.from({ length: mostNodesConfig as any })
     .map((_, i) => i)
     .map((i) => {
       return jsonRpcProvider({

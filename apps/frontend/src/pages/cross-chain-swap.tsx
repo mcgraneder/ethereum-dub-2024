@@ -4,6 +4,7 @@ import {
   SmartWalletRouter,
 } from "@eth-dub-2024/router-sdk";
 import { defaultAbiCoder } from "@ethersproject/abi";
+import { ChainId } from "@pancakeswap/chains";
 import { CurrencyAmount, type Currency } from "@pancakeswap/sdk";
 import { CopyIcon } from "@pancakeswap/uikit";
 import { useQuery } from "@tanstack/react-query";
@@ -30,7 +31,9 @@ import {
   assetsBaseConfig,
   feeAssets,
   fromAssets,
+  fromChains,
   toAssets,
+  toChains,
 } from "~/lib/assets";
 import { getSmartWalletOptions } from "~/utils/getSmartWalletOptions";
 import { wagmiconfig } from "./_app";
@@ -64,11 +67,17 @@ export default function Home() {
 
   const [tx, setTx] = useState<TransactionReceipt | undefined>(undefined);
   const [inputValue, setInputValue] = useState("");
+  const [fromChain] = useState("Bsc Testnet");
+  const [toChain] = useState("Arbitrum Sepoilla");
+
   const [asset] = useState<Currency>(assetsBaseConfig.CAKE);
   const [toAsset] = useState<Currency>(assetsBaseConfig.BUSD);
   const [feeAsset] = useState<Currency>(assetsBaseConfig.CAKE);
 
-  const assetBalance = useTokenBalance(asset.wrapped.address);
+  const assetBalance = useTokenBalance(
+    "0x4860ee416b52b4769CdC2E7876b09c6B77E3BD30",
+    ChainId.ARBITRUM_SEPOLIA,
+  );
   const toAssetBalance = useTokenBalance(toAsset.wrapped.address);
 
   const { transactionStatusDisplay, primaryColor, secondaryColor } = useTheme(
@@ -181,7 +190,7 @@ export default function Home() {
         outputAsset: toAsset.wrapped.address,
       },
     );
-    return SmartWalletRouter.buildSmartWalletTrade(trade, options);
+    return SmartWalletRouter.buildSmartWalletTrade(trade as any, options);
   }, [
     trade,
     address,
@@ -263,6 +272,12 @@ export default function Home() {
             chainId,
             tradeEncoded as any,
           );
+          const encodedTransfer =
+            await SmartWalletRouter.encodeTransferToRelayer(
+              [address, trade?.outputAmount.quotient as any],
+              "0x4860ee416b52b4769CdC2E7876b09c6B77E3BD30",
+            );
+          console.log(encodedTransfer);
         } else {
           response = await SmartWalletRouter.sendTransactionFromRelayer(
             chainId,
@@ -396,7 +411,43 @@ export default function Home() {
               <div className="relative my-2 flex w-full items-center rounded-md bg-gray-100 focus-within:bg-gray-200">
                 <select
                   className="absolute h-14 grow rounded-md bg-transparent pl-6 pr-12 outline-none"
-                  value={asset.symbol}
+                  value={fromChain}
+                  onChange={(e) => null}
+                >
+                  {Object.entries(fromChains).map(([k], i) => {
+                    return <option key={`2-${k}`}>{k}</option>;
+                  })}
+                </select>
+                <input
+                  type="number"
+                  className="h-14 flex-1 grow rounded-md bg-gray-100 px-6 text-right outline-none focus:bg-gray-200"
+                  value="Choose your from chain"
+                  placeholder="Choose your from chain"
+                  disabled
+                />
+              </div>
+              <div className="relative my-2 flex w-full items-center rounded-md bg-gray-100 focus-within:bg-gray-200">
+                <select
+                  className="absolute h-14 grow rounded-md bg-transparent pl-6 pr-12 outline-none"
+                  value={toChain}
+                  onChange={(e) => null}
+                >
+                  {Object.entries(toChains).map(([k], i) => {
+                    return <option key={`2-${k}`}>{k}</option>;
+                  })}
+                </select>
+                <input
+                  type="number"
+                  className="h-14 flex-1 grow rounded-md bg-gray-100 px-6 text-right outline-none focus:bg-gray-200"
+                  value="Choose your destination chain"
+                  placeholder="Choose your destination chain"
+                  disabled
+                />
+              </div>
+              <div className="relative my-2 flex w-full items-center rounded-md bg-gray-100 focus-within:bg-gray-200">
+                <select
+                  className="absolute h-14 grow rounded-md bg-transparent pl-6 pr-12 outline-none"
+                  value={`${asset.symbol} on Bsc Testnet`}
                   onChange={(e) => null}
                 >
                   {Object.entries(fromAssets).map(([k], i) => {
@@ -416,7 +467,7 @@ export default function Home() {
               <div className="relative my-2 flex w-full items-center rounded-md bg-gray-100 focus-within:bg-gray-200">
                 <select
                   className="absolute h-14 grow rounded-md bg-transparent pl-6 pr-12 outline-none"
-                  value={feeAsset.symbol}
+                  value={`${feeAsset.symbol} on Bsc Testnet`}
                   onChange={(e) => null}
                 >
                   {Object.entries(feeAssets).map(([k], i) => {
@@ -435,7 +486,7 @@ export default function Home() {
               <div className="relative my-2 flex w-full items-center rounded-md bg-gray-100 focus-within:bg-gray-200">
                 <select
                   className="absolute h-14 grow rounded-md bg-transparent pl-6 pr-12 outline-none"
-                  value={toAsset.symbol}
+                  value={`${toAsset.symbol} on Arbitrum Sepoilla`}
                   onChange={(e) => null}
                 >
                   {Object.entries(toAssets).map(([k], i) => {
@@ -471,12 +522,12 @@ export default function Home() {
               </div>
 
               <div className="mb-2 flex w-full justify-between">
-                <div className="bold text-ml">{`Your ${asset.symbol} Balance`}</div>
+                <div className="bold text-ml">{`Your Arbitrum ${asset.symbol} Balance`}</div>
                 <div className="overflow-ellipsis text-[17px]">{`${formatAssetBalance} ${asset.symbol}`}</div>
               </div>
 
               <div className="mb-2 flex w-full justify-between">
-                <div className="bold text-ml">{`Your ${toAsset.symbol} Balance`}</div>
+                <div className="bold text-ml">{`Your Bsc ${toAsset.symbol} Balance`}</div>
                 <div className="overflow-ellipsis text-[17px]">{`${formatToAssetBalance} ${toAsset.symbol}`}</div>
               </div>
 

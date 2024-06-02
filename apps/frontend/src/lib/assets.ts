@@ -99,7 +99,7 @@ export const feeAssets: Record<string, AssetConfig> = {
 };
 
 export const toAssetsSolana: Record<string, AssetConfig> = {
-  CAKE: { chains: [Chain.BNBChain] },
+  BUSD: { chains: [Chain.BNBChain] },
 };
 
 export const fromAssetsSolana: Record<string, AssetConfig> = {
@@ -111,5 +111,13 @@ export const feeAssetsSolana: Record<string, AssetConfig> = {
 };
 
 export const toAssets: Record<string, AssetConfig> = {
-  USDT: { chains: [Chain.BNBChain] },
+  CAKE: { chains: [Chain.BNBChain] },
+};
+
+export const fromChains: Record<string, AssetConfig> = {
+  "Bsc Testnet": { chains: [Chain.BNBChain] },
+};
+
+export const toChains: Record<string, AssetConfig> = {
+  "Arbitrum Sepoilla": { chains: [Chain.BNBChain] },
 };

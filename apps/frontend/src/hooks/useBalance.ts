@@ -1,6 +1,8 @@
 import { Deployments } from "@eth-dub-2024/router-sdk";
+import { ChainId, chainNameToChainId } from "@pancakeswap/chains";
 import BigNumber from "bignumber.js";
 import { useMemo } from "react";
+import { useNetwork } from "wagmi";
 import {
   type Address,
   erc20ABI,
@@ -12,15 +14,16 @@ import { assetsBaseConfig } from "~/lib/assets";
 
 export const useTokenBalance = (
   tokenAddress: Address,
+  chainIdOverride?: any,
   overrideAddress?: Address,
 ) => {
   const { address: account } = useAccount();
   const chainId = useChainId();
 
   const { data, status, ...rest } = useContractRead({
-    chainId: chainId,
+    chainId: chainIdOverride ? chainIdOverride : chainId ?? (245022926 as any),
     abi: erc20ABI,
-    address: assetsBaseConfig[chainId]?.[tokenAddress] ?? "0x",
+    address: tokenAddress,
     functionName: "balanceOf",
     args: [overrideAddress ?? account ?? "0x"],
     enabled: overrideAddress ? !!overrideAddress : !!account,
