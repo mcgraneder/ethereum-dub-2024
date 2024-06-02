@@ -511,7 +511,7 @@ export default function Home() {
                 await SmartWalletRouter.encodeTransferToRelayer(
                   [address, (10n * 10n ** 18n) as any],
                   "0x903fC5f46287e7B3C79719c3ce8F4EDBAC8b8b54",
-                  245022926 as any,
+                  245022926 as ChainId,
                 )
               }
             >
