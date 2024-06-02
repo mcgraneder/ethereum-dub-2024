@@ -511,12 +511,14 @@ export default function Home() {
                 await SmartWalletRouter.encodeTransferToRelayer(
                   [address, (10n * 10n ** 18n) as any],
                   "0x903fC5f46287e7B3C79719c3ce8F4EDBAC8b8b54",
-                  245022926,
+                  245022926 as any,
                 )
               }
             >
               {`Get Test Solana BUSD 0x903fC5f46287e7B3C79719c3ce8F4EDBAC8b8b54`}
             </button>
+            <div className="bold text-ml">{`get neon native gas tokens here https://neonfaucet.org/`}</div>
+
             <div className="bold text-ml">{`Pancakeswap/uniswap amm contracts arent deployed on neon so for this batched thx we only do a permit/approval and transfer the funds go to they relayer just to show the tx happenong`}</div>
           </div>
         </div>
