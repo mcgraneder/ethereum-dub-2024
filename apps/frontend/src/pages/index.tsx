@@ -73,9 +73,9 @@ export default function Home() {
 
   const [tx, setTx] = useState<TransactionReceipt | undefined>(undefined);
   const [inputValue, setInputValue] = useState("");
-  const [asset] = useState<Currency>(assetsBaseConfig.CAKE);
-  const [toAsset] = useState<Currency>(assetsBaseConfig.BUSD);
-  const [feeAsset] = useState<Currency>(assetsBaseConfig.CAKE);
+  const [asset] = useState<Currency>(assetsBaseConfig.BUSD);
+  const [toAsset] = useState<Currency>(assetsBaseConfig.CAKE);
+  const [feeAsset] = useState<Currency>(assetsBaseConfig.BUSD);
 
   const assetBalance = useTokenBalance(asset.wrapped.address);
   const toAssetBalance = useTokenBalance(toAsset.wrapped.address);
@@ -146,7 +146,7 @@ export default function Home() {
         return undefined;
 
       return SmartWalletRouter.getContractAllowance(
-        [asset.wrapped.address, feeAsset.wrapped.address],
+        [feeAsset.wrapped.address, asset.wrapped.address],
         address,
         smartWalletDetails?.address,
         chainId,
@@ -325,7 +325,7 @@ export default function Home() {
     allowance,
     smartWalletDetails,
   ]);
-
+  console.log(allowance);
   useEffect(() => {
     if (txState === ConfirmModalState.FAILED) {
       setTx(undefined);
@@ -458,7 +458,9 @@ export default function Home() {
                   className="h-14 flex-1 grow rounded-md bg-gray-100 px-6 text-right outline-none focus:bg-gray-200"
                   value={
                     fees
-                      ? Number(fees?.gasCost?.toExact()).toFixed(5) ??
+                      ? Number(fees?.gasCostInBaseToken?.toExact()).toFixed(
+                          5,
+                        ) ??
                         (
                           Number(trade?.gasEstimateInUSD?.toExact()) * 5
                         ).toFixed(5)

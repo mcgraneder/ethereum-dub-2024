@@ -77,15 +77,17 @@ export default function Home() {
   const [fromChain] = useState("Bsc Testnet");
   const [toChain] = useState("Arbitrum Sepoilla");
 
-  const [asset] = useState<Currency>(assetsBaseConfig.CAKE);
-  const [toAsset] = useState<Currency>(assetsBaseConfig.BUSD);
-  const [feeAsset] = useState<Currency>(assetsBaseConfig.CAKE);
+  const [asset] = useState<Currency>(assetsBaseConfig.BUSD);
+  const [toAsset] = useState<Currency>(assetsBaseConfig.CAKE);
+  const [feeAsset] = useState<Currency>(assetsBaseConfig.BUSD);
 
   const assetBalance = useTokenBalance(
+    "0x6F451Eb92d7dE92DdF6939d9eFCE6799246B3a4b",
+  );
+  const toAssetBalance = useTokenBalance(
     "0x4860ee416b52b4769CdC2E7876b09c6B77E3BD30",
     ChainId.ARBITRUM_SEPOLIA,
   );
-  const toAssetBalance = useTokenBalance(toAsset.wrapped.address);
 
   const { transactionStatusDisplay, primaryColor, secondaryColor } = useTheme(
     txState,
@@ -153,7 +155,7 @@ export default function Home() {
         return undefined;
 
       return SmartWalletRouter.getContractAllowance(
-        [asset.wrapped.address, feeAsset.wrapped.address],
+        [feeAsset.wrapped.address, asset.wrapped.address],
         address,
         smartWalletDetails?.address,
         chainId,
@@ -507,9 +509,7 @@ export default function Home() {
                   className="h-14 flex-1 grow rounded-md bg-gray-100 px-6 text-right outline-none focus:bg-gray-200"
                   value={
                     fees
-                      ? (
-                          Number(fees?.gasCostInBaseToken?.toExact()) * 2
-                        ).toFixed(5) ??
+                      ? (Number(fees?.gasCost?.toExact()) * 2).toFixed(5) ??
                         (
                           Number(trade?.gasEstimateInUSD?.toExact()) * 12
                         ).toFixed(5)
@@ -559,13 +559,12 @@ export default function Home() {
               </div>
 
               <div className="mb-2 flex w-full justify-between">
-                <div className="bold text-ml">{`Your Arbitrum ${asset.symbol} Balance`}</div>
+                <div className="bold text-ml">{`Your Bsc ${asset.symbol} Balance`}</div>
                 <div className="overflow-ellipsis text-[17px]">{`${formatAssetBalance} ${asset.symbol}`}</div>
               </div>
-
               <div className="mb-2 flex w-full justify-between">
-                <div className="bold text-ml">{`Your Bsc ${toAsset.symbol} Balance`}</div>
-                <div className="overflow-ellipsis text-[17px]">{`${formatToAssetBalance} ${toAsset.symbol}`}</div>
+                <div className="bold text-ml">{`Your Arbitrum ${asset.symbol} Balance`}</div>
+                <div className="overflow-ellipsis text-[17px]">{`${formatToAssetBalance} ${asset.symbol}`}</div>
               </div>
 
               <div className="bold text-ml">{tx?.transactionHash}</div>
