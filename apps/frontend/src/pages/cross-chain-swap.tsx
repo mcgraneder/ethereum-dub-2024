@@ -183,28 +183,21 @@ export default function Home() {
   });
 
   const { data: fees } = useQuery({
-    queryKey: [
-      "fees-query",
-      chainId,
-      asset.symbol,
-      toAsset.symbol,
-      feeAsset.symbol,
-    ],
+    queryKey: ["fees-query", asset.symbol, toAsset.symbol, feeAsset.symbol],
     queryFn: async () => {
-      if (!chainId || !deferQuotient || !feeAsset) return undefined;
+      if (!deferQuotient || !feeAsset) return undefined;
 
       return SmartWalletRouter.estimateSmartWalletFees({
         feeAsset: feeAsset.symbol,
         inputCurrency: asset,
         outputCurrency: toAsset,
-        chainId,
       });
     },
 
     refetchInterval: 10000,
     retry: false,
     refetchOnWindowFocus: false,
-    enabled: Boolean(asset && toAsset && trade && chainId && feeAsset),
+    enabled: Boolean(asset && toAsset && trade && feeAsset),
   });
 
   const swapCallParams = useMemo(() => {
@@ -516,6 +509,9 @@ export default function Home() {
                     fees
                       ? (
                           Number(fees?.gasCostInBaseToken?.toExact()) * 2
+                        ).toFixed(5) ??
+                        (
+                          Number(trade?.gasEstimateInUSD?.toExact()) * 12
                         ).toFixed(5)
                       : ""
                   }

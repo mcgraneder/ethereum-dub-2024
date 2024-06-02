@@ -176,15 +176,9 @@ export default function Home() {
   });
 
   const { data: fees } = useQuery({
-    queryKey: [
-      "fees-query",
-      chainId,
-      asset.symbol,
-      toAsset.symbol,
-      feeAsset.symbol,
-    ],
+    queryKey: ["fees-query", asset.symbol, toAsset.symbol, feeAsset.symbol],
     queryFn: async () => {
-      if (!chainId || !deferQuotient || !feeAsset) return undefined;
+      if (!deferQuotient || !feeAsset) return undefined;
 
       return SmartWalletRouter.estimateSmartWalletFees({
         feeAsset: feeAsset.symbol,
@@ -197,7 +191,7 @@ export default function Home() {
     refetchInterval: 10000,
     retry: false,
     refetchOnWindowFocus: false,
-    enabled: Boolean(asset && toAsset && trade && chainId && feeAsset),
+    enabled: Boolean(asset && toAsset && trade && feeAsset),
   });
 
   const swapCallParams = useMemo(() => {
@@ -463,7 +457,12 @@ export default function Home() {
                   type="number"
                   className="h-14 flex-1 grow rounded-md bg-gray-100 px-6 text-right outline-none focus:bg-gray-200"
                   value={
-                    fees ? Number(fees?.gasCost?.toExact()).toFixed(5) : ""
+                    fees
+                      ? Number(fees?.gasCost?.toExact()).toFixed(5) ??
+                        (
+                          Number(trade?.gasEstimateInUSD?.toExact()) * 5
+                        ).toFixed(5)
+                      : ""
                   }
                   placeholder="Choose your fee asset"
                   disabled

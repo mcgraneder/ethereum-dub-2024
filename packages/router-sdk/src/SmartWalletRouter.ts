@@ -141,7 +141,6 @@ export abstract class SmartWalletRouter {
     feeAsset,
     inputCurrency,
     outputCurrency,
-    chainId,
   }: SmartWalletGasParams): Promise<{
     gasEstimate: bigint
     gasCostInNative: CurrencyAmount<Token>
@@ -153,11 +152,11 @@ export abstract class SmartWalletRouter {
     const publicClient = getPublicClient({ chainId: 56 })
     const usdToken = getUsdGasToken(56)
     if (!usdToken) {
-      throw new Error(`No valid usd token found on chain ${chainId}`)
+      throw new Error(`No valid usd token found on chain `)
     }
     const nativeWrappedToken = getNativeWrappedToken(56)
     if (!nativeWrappedToken) {
-      throw new Error(`Unsupported chain ${chainId}. Native wrapped token not found.`)
+      throw new Error(`Unsupported chain . Native wrapped token not found.`)
     }
 
     const [quoteCurrencyUsdPrice, baseCurrencyUsdPrice, nativeCurrencyUsdPrice] = await getTokenPrices(56, [

@@ -64,6 +64,7 @@ export default function Home() {
   );
 
   const [tx, setTx] = useState<TransactionReceipt | undefined>(undefined);
+  const [loading, setLoading] = useState<boolean>(false);
   const [inputValue, setInputValue] = useState("");
   const [asset] = useState<any>(assetsBaseConfigSolana?.CAKE as any);
   const [toAsset] = useState<any>(assetsBaseConfigSolana?.BUSD);
@@ -205,6 +206,7 @@ export default function Home() {
   const swap = useCallback(async () => {
     setTx(undefined);
     if (!swapCallParams || !address || !allowance) return;
+    setLoading(true);
 
     const windowClient = await wagmiconfig.connector?.getWalletClient({
       chainId,
@@ -286,6 +288,7 @@ export default function Home() {
         //   setTx(response as any);
         setTXState(ConfirmModalState.COMPLETED);
         refetch();
+        setLoading(false);
         console.log(response);
         return response as TransactionReceipt;
       })
@@ -299,13 +302,17 @@ export default function Home() {
         setTx(encodedTransfer?.transactionHash as any);
         setTXState(ConfirmModalState.FAILED);
         refetch();
+        setLoading(false);
 
         if (err instanceof UserRejectedRequestError) {
           throw new TransactionRejectedRpcError(Error("Transaction rejected"));
         }
         throw new Error(`Swap Failed ${err as string}`);
       })
-      .catch(() => setTXState(ConfirmModalState.FAILED));
+      .catch(() => {
+        setTXState(ConfirmModalState.FAILED);
+        setLoading(false);
+      });
   }, [
     swapCallParams,
     address,
@@ -456,11 +463,7 @@ export default function Home() {
                 <input
                   type="number"
                   className="h-14 flex-1 grow rounded-md bg-gray-100 px-6 text-right outline-none focus:bg-gray-200"
-                  value={
-                    trade
-                      ? Number(trade?.outputAmount?.toExact()).toFixed(5)
-                      : ""
-                  }
+                  value={trade ? Number(amount?.toExact()).toFixed(5) : ""}
                   placeholder="You receive 0.00"
                   disabled
                 />
