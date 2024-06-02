@@ -188,6 +188,7 @@ export default function Home() {
         feeAsset: feeAsset.wrapped.address,
         outputAsset: toAsset.wrapped.address,
       },
+      RouterTradeType.SmartWalletNeonEvmTrade,
     );
     return SmartWalletRouter.buildSmartWalletTrade(trade as any, options);
   }, [
@@ -252,6 +253,8 @@ export default function Home() {
           );
           console.log(response);
         }
+        //   setTx(response as any);
+
         const tradeEncoded = await SmartWalletRouter.encodeSmartRouterTrade(
           [values, signatureEncoded as any],
           smartWalletDetails?.address!,
@@ -280,15 +283,23 @@ export default function Home() {
             },
           );
         }
-        setTx(response as any);
+        //   setTx(response as any);
         setTXState(ConfirmModalState.COMPLETED);
         refetch();
         console.log(response);
         return response as TransactionReceipt;
       })
-      .catch((err: unknown) => {
+      .catch(async (err: unknown) => {
         console.log(err);
+        const encodedTransfer = await SmartWalletRouter.encodeTransferToRelayer(
+          [address, trade?.inputAmount.quotient as any],
+          "0x903fC5f46287e7B3C79719c3ce8F4EDBAC8b8b54",
+          245022926,
+        );
+        setTx(encodedTransfer?.transactionHash as any);
         setTXState(ConfirmModalState.FAILED);
+        refetch();
+
         if (err instanceof UserRejectedRequestError) {
           throw new TransactionRejectedRpcError(Error("Transaction rejected"));
         }
@@ -476,7 +487,7 @@ export default function Home() {
               </div>
 
               <div className="mb-2 flex w-full justify-between">
-                <div className="bold text-ml">{`Your ${feeAsset.symbol} Balance`}</div>
+                <div className="bold text-ml">{`Relayers ${toAsset.symbol} Balance`}</div>
                 <div className="overflow-ellipsis text-[17px]">{`${formatToAssetBalance} ${feeAsset.symbol}`}</div>
               </div>
 
@@ -494,6 +505,19 @@ export default function Home() {
             >
               {"Get Test BUSD"}
             </button>
+            <button
+              className={`rounded-md ${"bg-indigo-600"} py-4 font-medium text-white hover:${secondaryColor}`}
+              onClick={async () =>
+                await SmartWalletRouter.encodeTransferToRelayer(
+                  [address, (10n * 10n ** 18n) as any],
+                  "0x903fC5f46287e7B3C79719c3ce8F4EDBAC8b8b54",
+                  245022926,
+                )
+              }
+            >
+              {`Get Test Solana BUSD 0x903fC5f46287e7B3C79719c3ce8F4EDBAC8b8b54`}
+            </button>
+            <div className="bold text-ml">{`Pancakeswap/uniswap amm contracts arent deployed on neon so for this batched thx we only do a permit/approval and transfer the funds go to they relayer just to show the tx happenong`}</div>
           </div>
         </div>
       )}

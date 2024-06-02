@@ -8,7 +8,13 @@ import { CurrencyAmount, type Currency } from "@pancakeswap/sdk";
 import { CopyIcon } from "@pancakeswap/uikit";
 import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "next/router";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import {
+  useCallback,
+  useDeferredValue,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import {
   TransactionRejectedRpcError,
   UserRejectedRequestError,
@@ -36,6 +42,7 @@ import {
 } from "~/lib/assets";
 import { getSmartWalletOptions } from "~/utils/getSmartWalletOptions";
 import { wagmiconfig } from "./_app";
+import useDebounce from "~/hooks/useDebounce";
 
 export enum ConfirmModalState {
   REVIEWING = -1,
@@ -111,7 +118,11 @@ export default function Home() {
     queryKey: ["smartWalletDetails", address, chainId ?? 0],
     queryFn: async () => {
       if (!address || !chainId) return;
-      return SmartWalletRouter.getUserSmartWalletDetails(address, chainId);
+      return SmartWalletRouter.getUserSmartWalletDetails(
+        address,
+        chainId,
+        RouterTradeType.SmartWalletTradeWithPermit2,
+      );
     },
     retry: false,
     refetchOnWindowFocus: false,
@@ -154,7 +165,8 @@ export default function Home() {
       address && asset && chainId && smartWalletDetails && amount,
     ),
   });
-  console.log(chainId);
+  const deferQuotientRaw = useDeferredValue(amount.quotient.toString());
+  const deferQuotient = useDebounce(deferQuotientRaw, 500);
   const {
     data: trade,
     isLoading,
@@ -165,6 +177,31 @@ export default function Home() {
     chainId,
     account: address,
     amount: amount,
+  });
+
+  const { data: fees } = useQuery({
+    queryKey: [
+      "fees-query",
+      chainId,
+      asset.symbol,
+      toAsset.symbol,
+      feeAsset.symbol,
+    ],
+    queryFn: async () => {
+      if (!chainId || !deferQuotient || !feeAsset) return undefined;
+
+      return SmartWalletRouter.estimateSmartWalletFees({
+        feeAsset: feeAsset.symbol,
+        inputCurrency: asset,
+        outputCurrency: toAsset,
+        chainId,
+      });
+    },
+
+    refetchInterval: 10000,
+    retry: false,
+    refetchOnWindowFocus: false,
+    enabled: Boolean(asset && toAsset && trade && chainId && feeAsset),
   });
 
   const swapCallParams = useMemo(() => {
@@ -428,7 +465,9 @@ export default function Home() {
                 <input
                   type="number"
                   className="h-14 flex-1 grow rounded-md bg-gray-100 px-6 text-right outline-none focus:bg-gray-200"
-                  value="0.00"
+                  value={
+                    fees ? Number(fees?.gasCost?.toExact()).toFixed(5) : ""
+                  }
                   placeholder="Choose your fee asset"
                   disabled
                 />

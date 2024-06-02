@@ -49,7 +49,7 @@
     "@pancakeswap/chains": "^0.4.1",
     "@pancakeswap/pcsx-sdk": "^0.0.2",
     "@pancakeswap/permit2-sdk": "^1.0.2",
-    "@pancakeswap/price-api-sdk": "^1.1.1",
+    "@pancakeswap/price-api-sdk": "^1.2.10",
     "@pancakeswap/sdk": "5",
     "@pancakeswap/smart-router": "5",
     "@pancakeswap/swap-sdk-core": "^1.1.0",

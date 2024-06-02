@@ -51,11 +51,7 @@ export class ClasicTrade implements Command {
       }
     }
     if (this.tradeType === RouterTradeType.SmartWalletNeonEvmTrade) {
-      planner.addUserOperation(
-        OperationType.WALLET_TRANSFER_FROM,
-        [account, smartWalletDetails.address, amountIn, inputToken],
-        smartWalletDetails.address,
-      )
+      planner.addUserOperation(OperationType.APPROVE, [account, amountIn], inputToken)
     }
   }
 }

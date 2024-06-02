@@ -1,13 +1,14 @@
-import { ChainId } from '@pancakeswap/chains'
+import type { ChainId } from '@pancakeswap/chains'
 /* eslint-disable lines-between-class-members */
-import type { TradeType } from '@pancakeswap/sdk'
+import { type Currency, CurrencyAmount, type TradeType } from '@pancakeswap/sdk'
 import type { SmartRouterTrade } from '@pancakeswap/smart-router'
 import type { PancakeSwapOptions } from '@pancakeswap/universal-router-sdk'
 import type { BaseError } from 'abitype'
 import { ethers } from 'ethers'
 import type { Account, Address } from 'viem'
 import { erc20Abi as ERC20ABI, formatTransactionRequest, type Hex, type PublicClient } from 'viem'
-import { arbitrumSepolia } from 'viem/chains'
+import { getTokenPrices } from '@pancakeswap/price-api-sdk'
+
 import { getContractError, getTransactionError, parseAccount } from 'viem/utils'
 import { smartWalletAbi } from './abis/SmartWalletAbi'
 import { OperationType, WalletOperationBuilder, encodeOperation } from './encoder/walletOperations'
@@ -27,6 +28,7 @@ import type {
 import { getSmartWallet, getSmartWalletFactory } from './utils/contracts'
 import { AccountNotFoundError } from './utils/error'
 import { typedMetaTx } from './utils/typedMetaTx'
+import { getNativeWrappedToken, getTokenPriceByNumber, getUsdGasToken } from './utils/estimateGas'
 
 function calculateGasMargin(value: bigint, margin = 1000n): bigint {
   return (value * (10000n + margin)) / 10000n
@@ -131,6 +133,79 @@ export abstract class SmartWalletRouter {
       console.log(error)
       const errParams = { ...txConfig, account: client.account }
       throw getTransactionError(error as BaseError, errParams)
+    }
+  }
+
+  public static async estimateSmartWalletFees({
+    feeAsset,
+    inputCurrency,
+    outputCurrency,
+    chainId,
+  }: SmartWalletGasParams): Promise<{
+    gasEstimate: bigint
+    gasCostInNative: CurrencyAmount<Token>
+    gasCostInQuoteToken: CurrencyAmount<Currency>
+    gasCostInBaseToken: CurrencyAmount<Currency>
+    gasCostInUSD: CurrencyAmount<Currency>
+    gasCost: CurrencyAmount<Currency>
+  }> {
+    const publicClient = getPublicClient({ chainId: 56 })
+    const usdToken = getUsdGasToken(56)
+    if (!usdToken) {
+      throw new Error(`No valid usd token found on chain ${chainId}`)
+    }
+    const nativeWrappedToken = getNativeWrappedToken(56)
+    if (!nativeWrappedToken) {
+      throw new Error(`Unsupported chain ${chainId}. Native wrapped token not found.`)
+    }
+
+    const [quoteCurrencyUsdPrice, baseCurrencyUsdPrice, nativeCurrencyUsdPrice] = await getTokenPrices(56, [
+      '0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56',
+      '0x0E09FaBB73Bd3Ade0a17ECC321fD13a19e81cE82',
+      nativeWrappedToken.address,
+    ])
+
+    const quotePriceInUsd = getTokenPriceByNumber(usdToken, outputCurrency, quoteCurrencyUsdPrice?.priceUSD)
+    const basePriceInUsd = getTokenPriceByNumber(usdToken, inputCurrency, baseCurrencyUsdPrice?.priceUSD)
+    const nativePriceInUsd = getTokenPriceByNumber(usdToken, nativeWrappedToken, nativeCurrencyUsdPrice?.priceUSD)
+
+    const quotePriceInNative =
+      quotePriceInUsd && nativePriceInUsd ? nativePriceInUsd.multiply(quotePriceInUsd.invert()) : undefined
+
+    const basePriceInNative =
+      basePriceInUsd && nativePriceInUsd ? nativePriceInUsd.multiply(basePriceInUsd.invert()) : undefined
+
+    //cant estimate the SW exec itself because we need signature to pass ec recovery
+    // 50000 is accurate average estimation of its cost
+    const estimationOfSmartWalletBatchExec = 5534980n
+    const gasPrice = await publicClient.getGasPrice()
+    const baseGasCostWei = gasPrice * estimationOfSmartWalletBatchExec
+    const totalGasCostNativeCurrency = CurrencyAmount.fromRawAmount(nativeWrappedToken, baseGasCostWei)
+
+    let gasCostInQuoteToken: CurrencyAmount<Currency> = CurrencyAmount.fromRawAmount(outputCurrency, 0n)
+    let gasCostInBaseToken: CurrencyAmount<Currency> = CurrencyAmount.fromRawAmount(outputCurrency, 0n)
+    let gasCostInUSD: CurrencyAmount<Currency> = CurrencyAmount.fromRawAmount(usdToken, 0n)
+
+    if (inputCurrency.isNative) gasCostInBaseToken = totalGasCostNativeCurrency
+    if (outputCurrency.isNative) gasCostInQuoteToken = totalGasCostNativeCurrency
+
+    if (!inputCurrency.isNative && !outputCurrency.isNative && quotePriceInNative && basePriceInNative) {
+      gasCostInQuoteToken = quotePriceInNative.quote(totalGasCostNativeCurrency)
+      gasCostInBaseToken = basePriceInNative.quote(totalGasCostNativeCurrency)
+    }
+
+    if (nativePriceInUsd) {
+      gasCostInUSD = nativePriceInUsd.quote(totalGasCostNativeCurrency)
+    }
+
+    const gasCost = feeAsset === inputCurrency.symbol ? gasCostInBaseToken : gasCostInQuoteToken
+    return {
+      gasEstimate: estimationOfSmartWalletBatchExec,
+      gasCostInNative: totalGasCostNativeCurrency,
+      gasCostInQuoteToken,
+      gasCostInBaseToken,
+      gasCostInUSD,
+      gasCost,
     }
   }
 

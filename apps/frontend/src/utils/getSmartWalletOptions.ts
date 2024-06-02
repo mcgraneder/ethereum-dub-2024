@@ -15,6 +15,7 @@ export const getSmartWalletOptions = (
   smartWalletDetails: never,
   chainId: ChainId,
   assets: { inputAsset: Address; feeAsset: Address; outputAsset: Address },
+  type: RouterTradeType,
 ): SmartWalletTradeOptions => {
   return {
     account: address,
@@ -23,7 +24,7 @@ export const getSmartWalletOptions = (
     hasApprovedPermit2: allowance.t0Allowance.needsApproval,
     hasApprovedRelayer: allowance.t0Allowance.needsApproval,
     smartWalletDetails: smartWalletDetails,
-    SmartWalletTradeType: RouterTradeType.SmartWalletTradeWithPermit2,
+    SmartWalletTradeType: type,
     router: Routers.SmartOrderRouter,
     isUsingPermit2: isUsingPermit2,
     allowance,

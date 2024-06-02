@@ -411,7 +411,7 @@ importers:
         specifier: ^1.0.2
         version: 1.0.5(typescript@5.4.5)(zod@3.23.8)
       '@pancakeswap/price-api-sdk':
-        specifier: ^1.1.1
+        specifier: ^1.2.10
         version: 1.2.10(@pancakeswap/pcsx-sdk@0.0.2)(@pancakeswap/permit2-sdk@1.0.5)(@pancakeswap/smart-router@5.1.8)(@pancakeswap/swap-sdk-core@1.1.0)
       '@pancakeswap/sdk':
         specifier: '5'
