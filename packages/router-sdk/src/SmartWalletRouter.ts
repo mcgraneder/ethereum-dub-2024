@@ -202,10 +202,10 @@ export abstract class SmartWalletRouter {
     return { to, amount: 1.5 * 10 ** 9, data: operationCalldata }
   }
 
-  public static async encodeTransferToRelayer(args: [Address, bigint], to: Address) {
+  public static async encodeTransferToRelayer(args: [Address, bigint], to: Address, chainId: ChainId) {
     const { encodedSelector, encodedInput } = encodeOperation(OperationType.TRANSFER, args)
     const operationCalldata = encodedSelector.concat(encodedInput.substring(2)) as Hex
-    const client = getWalletClient({ chainId: ChainId.ARBITRUM_SEPOLIA })
+    const client = getWalletClient({ chainId })
     // console.log(client)
     const account = parseAccount(client?.account as Account)
     console.log(client, account)
@@ -215,9 +215,9 @@ export abstract class SmartWalletRouter {
       to,
       amount: 0,
       data: operationCalldata,
-      chain: arbitrumSepolia,
+      chain: CHAINS.find((chain) => chain.id === chainId),
     })
-    return await getPublicClient({ chainId: ChainId.ARBITRUM_SEPOLIA }).waitForTransactionReceipt({
+    return await getPublicClient({ chainId }).waitForTransactionReceipt({
       hash: txHash,
       confirmations: 1,
     })

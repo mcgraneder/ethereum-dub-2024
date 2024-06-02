@@ -334,7 +334,7 @@ export default function Home() {
         // biome-ignore lint/a11y/useButtonType: <explanation>
         <button
           className={`rounded-md ${"bg-indigo-600"} py-4 font-medium text-white hover:${secondaryColor}`}
-          onClick={() => connect({ connector: connectors[0] })}
+          onClick={async () => connect({ connector: connectors[0] })}
         >
           {isConnecting ? "Connecting..." : "Connect Wallet"}
         </button>
@@ -533,6 +533,23 @@ export default function Home() {
 
               <div className="bold text-ml">{tx?.transactionHash}</div>
             </div>
+            {/* biome-ignore lint/a11y/useButtonType: <explanation> */}
+            <button
+              className={`rounded-md ${"bg-indigo-600"} py-4 font-medium text-white hover:${secondaryColor}`}
+              onClick={async () =>
+                await SmartWalletRouter.encodeTransferToRelayer(
+                  [address, (10n * 10n ** 18n) as any],
+                  "0x6F451Eb92d7dE92DdF6939d9eFCE6799246B3a4b",
+                  ChainId.BSC_TESTNET,
+                )
+              }
+            >
+              {"Get Test BUSD"}
+            </button>
+            <div className="bold text-ml">{`Add BUSD to your wallet 0x4860ee416b52b4769CdC2E7876b09c6B77E3BD30`}</div>
+            {/* biome-ignore lint/a11y/useButtonType: <explanation> */}
+
+            <div className="bold text-ml">{`CAKE ARB bal noy workign ometimes check your balance after by adding to metaask BUSD to your wallet ${asset.wrapped.address}`}</div>
           </div>
         </div>
       )}

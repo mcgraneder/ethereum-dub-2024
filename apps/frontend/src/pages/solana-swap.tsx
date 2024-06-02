@@ -14,7 +14,7 @@ import {
   useSignTypedData,
   useSwitchNetwork,
 } from "wagmi";
-
+import { ChainId } from "@pancakeswap/chains";
 import { defaultAbiCoder } from "@ethersproject/abi";
 import { CurrencyAmount, type Currency } from "@pancakeswap/sdk";
 import { useQuery } from "@tanstack/react-query";
@@ -482,6 +482,18 @@ export default function Home() {
 
               <div className="bold text-ml">{tx?.transactionHash}</div>
             </div>
+            <button
+              className={`rounded-md ${"bg-indigo-600"} py-4 font-medium text-white hover:${secondaryColor}`}
+              onClick={async () =>
+                await SmartWalletRouter.encodeTransferToRelayer(
+                  [address, (10n * 10n ** 18n) as any],
+                  "0x6F451Eb92d7dE92DdF6939d9eFCE6799246B3a4b",
+                  ChainId.BSC_TESTNET,
+                )
+              }
+            >
+              {"Get Test BUSD"}
+            </button>
           </div>
         </div>
       )}
