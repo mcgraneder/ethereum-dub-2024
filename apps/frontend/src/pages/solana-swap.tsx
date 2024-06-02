@@ -23,15 +23,19 @@ import {
   SmartWalletRouter,
 } from "@eth-dub-2024/router-sdk";
 import { ChainId } from "@pancakeswap/chains";
+
 import { useQuery } from "@tanstack/react-query";
 import { type Currency, CurrencyAmount } from "@pancakeswap/sdk";
 import {
   type Asset,
   assets,
-  assetsBaseConfig,
+  assetsBaseConfigSolana,
   feeAssets,
   toAssets,
   fromAssets,
+  fromAssetsSolana,
+  feeAssetsSolana,
+  toAssetsSolana,
 } from "~/lib/assets";
 import { useTokenBalance } from "~/hooks/useBalance";
 import {
@@ -76,9 +80,9 @@ export default function Home() {
 
   const [tx, setTx] = useState<TransactionReceipt | undefined>(undefined);
   const [inputValue, setInputValue] = useState("");
-  const [asset] = useState<Currency>(assetsBaseConfig.CAKE);
-  const [toAsset] = useState<Currency>(assetsBaseConfig.BUSD);
-  const [feeAsset] = useState<Currency>(assetsBaseConfig.CAKE);
+  const [asset] = useState<Currency>(assetsBaseConfigSolana.CAKE);
+  const [toAsset] = useState<Currency>(assetsBaseConfigSolana.BUSD);
+  const [feeAsset] = useState<Currency>(assetsBaseConfigSolana.USDT);
 
   const assetBalance = useTokenBalance(asset.wrapped.address);
   const toAssetBalance = useTokenBalance(toAsset.wrapped.address);
@@ -332,21 +336,13 @@ export default function Home() {
         >
           {isConnecting ? "Connecting..." : "Connect Wallet"}
         </button>
-      ) : isConnected && currenChain?.id !== 97 ? (
+      ) : isConnected && currenChain?.id !== 245022926 ? (
         // biome-ignore lint/a11y/useButtonType: <explanation>
         <button
           className={`rounded-md ${"bg-indigo-600"} py-4 font-medium text-white hover:${secondaryColor}`}
-          onClick={() => switchNetwork(97)}
+          onClick={() => switchNetwork(245022926)}
         >
-          {"Switch to Bsc Testnet"}
-        </button>
-      ) : !address ? (
-        // biome-ignore lint/a11y/useButtonType: <explanation>
-        <button
-          className={`rounded-md ${"bg-indigo-600"} py-4 font-medium text-white hover:${secondaryColor}`}
-          onClick={() => connect({ connector: connectors[0] })}
-        >
-          {isConnecting ? "Connecting..." : "Connect Wallet"}
+          {"Switch to Neon EVM Devnet"}
         </button>
       ) : (
         <div className="mx-auto mb-[50px] mt-[200px] w-[600px] items-center">
@@ -356,7 +352,7 @@ export default function Home() {
               className={`mx-1 w-full rounded-md ${primaryColor} px-4 py-2 font-medium text-white hover:${secondaryColor}`}
               onClick={() => navigateTo("/solana-swap")}
             >
-              Solana Swap
+              Classic Swap
             </button>
             {/* biome-ignore lint/a11y/useButtonType: <explanation> */}
             <button
@@ -408,7 +404,7 @@ export default function Home() {
                   value={asset.symbol}
                   onChange={(e) => null}
                 >
-                  {Object.entries(fromAssets).map(([k], i) => {
+                  {Object.entries(fromAssetsSolana).map(([k], i) => {
                     return <option key={`${k}`}>{k}</option>;
                   })}
                 </select>
@@ -428,7 +424,7 @@ export default function Home() {
                   value={feeAsset.symbol}
                   onChange={(e) => null}
                 >
-                  {Object.entries(feeAssets).map(([k], i) => {
+                  {Object.entries(feeAssetsSolana).map(([k], i) => {
                     return <option key={`2-${k}`}>{k}</option>;
                   })}
                 </select>
@@ -447,7 +443,7 @@ export default function Home() {
                   value={toAsset.symbol}
                   onChange={(e) => null}
                 >
-                  {Object.entries(toAssets).map(([k], i) => {
+                  {Object.entries(toAssetsSolana).map(([k], i) => {
                     return <option key={`3-${k}`}>{k}</option>;
                   })}
                 </select>

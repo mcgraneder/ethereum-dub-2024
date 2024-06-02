@@ -27,13 +27,7 @@ const bsc = {
   },
 } satisfies Chain;
 
-export const CHAINS: [Chain, ...Chain[]] = [
-  bsc,
-  bscTestnet,
-  mainnet,
-  sepolia,
-  neonDevnet,
-];
+export const CHAINS: any = [bsc, bscTestnet, mainnet, sepolia, neonDevnet];
 
 export const PUBLIC_NODES: Record<number, string[]> = {
   [ChainId.BSC]: [
