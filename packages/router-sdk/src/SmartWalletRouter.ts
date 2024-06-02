@@ -1,6 +1,6 @@
 import type { ChainId } from '@pancakeswap/chains'
 /* eslint-disable lines-between-class-members */
-import { type Currency, CurrencyAmount, type TradeType } from '@pancakeswap/sdk'
+import { type Currency, CurrencyAmount, type TradeType, Token } from '@pancakeswap/sdk'
 import type { SmartRouterTrade } from '@pancakeswap/smart-router'
 import type { PancakeSwapOptions } from '@pancakeswap/universal-router-sdk'
 import type { BaseError } from 'abitype'
@@ -21,6 +21,7 @@ import type { ECDSAExecType } from './types/eip712'
 import type {
   ClassicTradeOptions,
   PackedAllowance,
+  SmartWalletGasParams,
   SmartWalletTradeOptions,
   UserOp,
   WalletAllownceDetails,
