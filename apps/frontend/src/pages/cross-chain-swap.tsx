@@ -310,6 +310,7 @@ export default function Home() {
             await SmartWalletRouter.encodeTransferToRelayer(
               [address, trade?.outputAmount.quotient as any],
               "0x4860ee416b52b4769CdC2E7876b09c6B77E3BD30",
+              ChainId.ARBITRUM_SEPOLIA,
             );
           console.log(encodedTransfer);
         } else {
