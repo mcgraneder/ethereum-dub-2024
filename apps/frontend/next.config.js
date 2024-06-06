@@ -2,11 +2,23 @@
  * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation. This is especially useful
  * for Docker builds.
  */
+// import webpack from 'webpack'
 await import("./src/env.js");
 
 /** @type {import("next").NextConfig} */
 const config = {
   reactStrictMode: true,
+  compiler: {
+    styledComponents: true,
+  },
+  webpack(config, { buildId }) {
+    config.module.rules.push({ test: /\.svg$/, use: ["@svgr/webpack"] });
+    // config.plugins.push(
+    //   new webpack.DefinePlugin({ "process.env.BUILD_ID": JSON.stringify(buildId) })
+    // );
+    config.resolve.fallback = { fs: false, module: false, path: false };
+    return config;
+  },
 
   /**
    * If you are using `appDir` then you must comment the below `i18n` config out.

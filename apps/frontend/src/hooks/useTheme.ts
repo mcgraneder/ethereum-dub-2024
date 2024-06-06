@@ -1,6 +1,6 @@
 import type { Currency } from "@pancakeswap/swap-sdk-core";
 import { useMemo } from "react";
-import { ConfirmModalState } from "~/pages";
+import { ConfirmModalState } from "~/pages/cross-chain-swap";
 
 export const useTheme = (
   txState: ConfirmModalState,
