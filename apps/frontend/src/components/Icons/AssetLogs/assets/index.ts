@@ -32,55 +32,56 @@ import RenWBTCIcon from "../../../../../public/svgs/assets/renwBTC.svg";
 import RenZECIcon from "../../../../../public/svgs/assets/renZEC.svg";
 import RenGLMRIcon from "../../../../../public/svgs/assets/renGLMR.svg";
 import RenKAVAIcon from "../../../../../public/svgs/assets/renKAVA.svg";
-
-
+import RenCAKEIcon from "../../../../../public/svgs/assets/renCAKE.svg";
 
 export const Icons: {
-    [key: string]: React.FunctionComponent<
-        React.SVGProps<SVGSVGElement> & {
-            title?: string | undefined;
-        }
-    >;
+  [key: string]: React.FunctionComponent<
+    React.SVGProps<SVGSVGElement> & {
+      title?: string | undefined;
+    }
+  >;
 } = {
-    AVAX: RenAVAXIcon,
-    ArbETH: RenArbETHIcon,
-    BADGER: RenBADGERIcon,
-    BCH: RenBCHIcon,
-    BNB: RenBNBIcon,
-    BTC: RenBTCIcon,
-    COMP: RenCOMPIcon,
-    CRV: RenCRVIcon,
-    DGB: RenDGBIcon,
-    DOGE: RenDOGEIcon,
-    ETH: RenETHIcon,
-    FIL: RenFILIcon,
-    FTM: RenFTMIcon,
-    FTT: RenFTTIcon,
-    KNC: RenKNCIcon,
-    LINK: RenLINKIcon,
-    LUNA: RenLUNAIcon,
-    MATIC: RenMATICIcon,
-    MIM: RenMIMIcon,
-    REN: RenRENIcon,
-    ROOK: RenROOKIcon,
-    SOL: RenSOLIcon,
-    SUSHI: RenSUSHIIcon,
-    UNI: RenUNIIcon,
-    wBTC: RenWBTCIcon,
-    ZEC: RenZECIcon,
-    BUSD: RenBUSDIcon,
-    DAI: RenDAIIcon,
-    EURT: RenEURTIcon,
-    UST: RenUSTIcon,
-    USDT: RenUSDTIcon,
-    USDC: RenUSDCIcon,
-    gETH: RenETHIcon,
-    GLMR: RenGLMRIcon,
-    KAVA: RenKAVAIcon,
-    REN_Goerli: RenRENIcon,
-    DAI_Goerli: RenDAIIcon,
-    USDT_Goerli: RenUSDTIcon,
-    ASTRAL_USDT: RenUSDTIcon,
-    USDC_Goerli: RenUSDCIcon,
-    oETH: RenETHIcon
+  AVAX: RenAVAXIcon,
+  CAKE: RenCAKEIcon,
+
+  ArbETH: RenArbETHIcon,
+  BADGER: RenBADGERIcon,
+  BCH: RenBCHIcon,
+  BNB: RenBNBIcon,
+  BTC: RenBTCIcon,
+  COMP: RenCOMPIcon,
+  CRV: RenCRVIcon,
+  DGB: RenDGBIcon,
+  DOGE: RenDOGEIcon,
+  ETH: RenETHIcon,
+  FIL: RenFILIcon,
+  FTM: RenFTMIcon,
+  FTT: RenFTTIcon,
+  KNC: RenKNCIcon,
+  LINK: RenLINKIcon,
+  LUNA: RenLUNAIcon,
+  MATIC: RenMATICIcon,
+  MIM: RenMIMIcon,
+  REN: RenRENIcon,
+  ROOK: RenROOKIcon,
+  SOL: RenSOLIcon,
+  SUSHI: RenSUSHIIcon,
+  UNI: RenUNIIcon,
+  wBTC: RenWBTCIcon,
+  ZEC: RenZECIcon,
+  BUSD: RenBUSDIcon,
+  DAI: RenDAIIcon,
+  EURT: RenEURTIcon,
+  UST: RenUSTIcon,
+  USDT: RenUSDTIcon,
+  USDC: RenUSDCIcon,
+  gETH: RenETHIcon,
+  GLMR: RenGLMRIcon,
+  KAVA: RenKAVAIcon,
+  REN_Goerli: RenRENIcon,
+  DAI_Goerli: RenDAIIcon,
+  USDT_Goerli: RenUSDTIcon,
+  ASTRAL_USDT: RenUSDTIcon,
+  USDC_Goerli: RenUSDCIcon,
+  oETH: RenETHIcon,
 };

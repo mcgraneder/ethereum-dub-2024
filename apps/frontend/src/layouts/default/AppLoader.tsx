@@ -23,7 +23,7 @@ const AppLoader = () => {
       <div className="flex flex-col items-center justify-center gap-2">
         <ReactTyped
           className=" text-[55px] font-bold text-white"
-          strings={["Astral Bridge."]}
+          strings={["Eire Swap."]}
           typingSpeed={100}
           backSpeed={100}
           loop

@@ -32,6 +32,7 @@ export enum Asset {
   USDC = "USDC",
   USDT = "USDT",
   ZEC = "ZEC",
+  CAKE = "CAKE",
 }
 
 /* eslint-disable @typescript-eslint/no-shadow */
@@ -80,6 +81,8 @@ const createColor = (primary = defaultColor) => {
 
 export const assetsColors: Record<Asset, AssetColor> = {
   AVAX: createColor("#E84142"),
+  CAKE: createColor("#E84142"),
+
   ArbETH: createColor("#627EEA"),
   BADGER: createColor("#F1A23F"),
   BCH: createColor("#6CC64B"),
