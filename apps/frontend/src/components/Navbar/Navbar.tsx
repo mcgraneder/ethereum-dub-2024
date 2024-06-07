@@ -99,9 +99,14 @@ export const Navbar = () => {
     }
   };
 
+  const enableConnection = useCallback(() => {
+    connect({ connector: connectors[0] });
+    push("/trade");
+  }, [push, connect, connectors]);
+
   const closeConnection = useCallback(() => {
     disconnect();
-    push("/");
+    push("/trade");
   }, [push, disconnect]);
 
   useEffect(() => {
@@ -132,9 +137,7 @@ export const Navbar = () => {
               <PrimaryButton
                 className="mt-[2px] bg-[rgb(116,132,224)] py-[6px] hover:bg-[rgb(136,152,244)]"
                 onClick={async () => {
-                  !active
-                    ? connect({ connector: connectors[0] })
-                    : closeConnection();
+                  !active ? enableConnection() : closeConnection();
                 }}
               >
                 <span className="xs:block mr-2 hidden">
