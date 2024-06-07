@@ -227,13 +227,13 @@ export abstract class SmartWalletRouter {
   public static async getContractAllowance(
     tokens: Address[],
     owner: Address,
-    spender: Address,
     chainId: ChainId,
     amount: bigint,
   ): Promise<WalletAllownceDetails> {
     try {
       const client = getViemClient({ chainId })
 
+      const { address: spender } = await SmartWalletRouter.getUserSmartWalletDetails(owner, chainId)
       const [[, , t0nonce], [, , t1nonce]] = (await client.multicall({
         contracts: [
           ...tokens.map((token) => ({
@@ -269,7 +269,7 @@ export abstract class SmartWalletRouter {
         getContractError(error as BaseError, {
           abi: ERC20ABI,
           address: tokens[0],
-          args: [owner, spender],
+          args: [owner, owner],
           functionName: 'allowance',
         }),
       )

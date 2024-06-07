@@ -17,7 +17,8 @@ const TradePage: NextPage = () => {
 
   const [asset, setAsset] = useState<any>(assetsBaseConfig.CAKE);
   const [feeAsset, setFeeAsset] = useState<any>(undefined);
-  const [toAsset, setToAsset] = useState<any>(undefined);
+  const [toAsset, setToAsset] = useState<any>(assetsBaseConfig.BNB);
+  const [crossAsset, setCrossAsset] = useState<any>(undefined);
 
   const { isConnected } = useAccount();
   const { push } = useRouter();
@@ -48,8 +49,8 @@ const TradePage: NextPage = () => {
       <AssetListModal
         setShowTokenModal={setShowToTokenModal}
         visible={showToTokenModal}
-        setAsset={setToAsset}
-        assetFilter={[Asset.BUSD]}
+        setAsset={setCrossAsset}
+        assetFilter={[Asset.USDT]}
       />
 
       <TransactionFlowModals text={text} asset={asset} setText={setText} />
@@ -59,6 +60,7 @@ const TradePage: NextPage = () => {
           asset={asset}
           toAsset={toAsset}
           feeAsset={feeAsset}
+          crossAsset={crossAsset}
           setShowTokenModal={setShowTokenModal}
           setShowFeeTokenModal={setShowFeeTokenModal}
           setShowToTokenModal={setShowToTokenModal}

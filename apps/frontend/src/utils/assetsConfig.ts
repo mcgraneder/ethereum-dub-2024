@@ -93,6 +93,17 @@ export const assetsBaseConfig: Record<Asset, AssetBaseConfig> = {
     chainId: ChainId.BSC_TESTNET,
     decimals: 18,
   },
+  USDT: {
+    Icon: Asset.USDT,
+
+    shortName: "USDT",
+    fullName: "Tether",
+    rateService: AssetRateService.Coingecko,
+    rateSymbol: "tether",
+    address: "0x903fC5f46287e7B3C79719c3ce8F4EDBAC8b8b54",
+    chainId: ChainId.ARBITRUM_SEPOLIA,
+    decimals: 6,
+  },
   AVAX: {
     Icon: Asset.AVAX,
 
@@ -129,11 +140,11 @@ export const assetsBaseConfig: Record<Asset, AssetBaseConfig> = {
   BNB: {
     Icon: Asset.BNB,
 
-    shortName: "BNB",
-    fullName: "Binance Coin",
+    shortName: "WBNB",
+    fullName: "Wrapped Binance Coin",
     rateService: AssetRateService.Coingecko,
     rateSymbol: "binancecoin",
-    address: "0x6F451Eb92d7dE92DdF6939d9eFCE6799246B3a4b",
+    address: "0xCE79F78537f95a2256e76A3FE4b99D3af148833F",
     chainId: ChainId.BSC_TESTNET,
     decimals: 18,
   },
@@ -399,17 +410,6 @@ export const assetsBaseConfig: Record<Asset, AssetBaseConfig> = {
     fullName: "USD Coin",
     rateService: AssetRateService.Coingecko,
     rateSymbol: "usd-coin",
-    address: "0x6F451Eb92d7dE92DdF6939d9eFCE6799246B3a4b",
-    chainId: ChainId.BSC_TESTNET,
-    decimals: 6,
-  },
-  USDT: {
-    Icon: Asset.USDT,
-
-    shortName: "USDT",
-    fullName: "Tether",
-    rateService: AssetRateService.Coingecko,
-    rateSymbol: "tether",
     address: "0x6F451Eb92d7dE92DdF6939d9eFCE6799246B3a4b",
     chainId: ChainId.BSC_TESTNET,
     decimals: 6,

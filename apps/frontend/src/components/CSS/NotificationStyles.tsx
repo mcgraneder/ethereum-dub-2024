@@ -78,7 +78,7 @@ const BarStyled = styled.div`
 
 const NotificationStyled = styled.div`
   animation-fill-mode: forwards;
-  background-color: rgb(12, 18, 43);
+  background-color: rgb(14, 17, 28);
   border-radius: 10px;
   box-shadow: 0px 4px 10px rgba(48, 71, 105, 0.1);
   display: flex;

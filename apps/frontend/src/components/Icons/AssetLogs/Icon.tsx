@@ -1,6 +1,6 @@
 import type React from "react";
 import { Icons as AssetIcons } from "./assets/index";
-// import { Icons as ChainIcons } from "./chains/index";
+import { Icons as ChainIcons } from "./chains/index";
 
 interface Props {
   chainName: string;
@@ -15,6 +15,6 @@ export const Icon: React.FC<
         HTMLImageElement
       >)
 > = ({ chainName, white, className, ...props }) => {
-  const Icon = AssetIcons[chainName];
+  const Icon = ChainIcons[chainName] || AssetIcons[chainName];
   return <>{Icon && <Icon className={className} {...props} />}</>;
 };

@@ -13,7 +13,12 @@ import EthereumLogo from "../../../public/svgs/assets/renETH.svg";
 import { Settings, ChevronDown } from "react-feather";
 // import UniswapLogoPink from "../../../public/svgs/";
 // import UniswapLogo from "../../../public/svgs/assets/uniswapPink.svg";
-import { UilAngleDown, UilArrowRight } from "@iconscout/react-unicons";
+import {
+  UilAngleDown,
+  UilArrowRight,
+  UilSpinner,
+  UilCopy,
+} from "@iconscout/react-unicons";
 import TokenSelectDropdown from "./ChainSelector";
 import { Icon } from "../Icons/AssetLogs/Icon";
 import {
@@ -54,6 +59,10 @@ import { BREAKPOINTS } from "../theme";
 import meshSrc from "../../../public/images/Mesh.png";
 import Image from "next/image";
 import GreenDot from "../Icons/GreenDot";
+import { SpinnerWrapper } from "../CSS/WalletModalStyles";
+import { ChainIdToRenChain } from "~/utils/chains";
+import { useNotification } from "~/context/useNotificationState";
+import { shortenAddress } from "~/utils/misc";
 
 export enum ConfirmModalState {
   REVIEWING = -1,
@@ -306,7 +315,7 @@ export const TokenSelectButton = styled.div`
   padding: 0px 8px;
   -webkit-box-pack: justify;
   justify-content: space-between;
-  margin-left: 12px;
+  margin-left: 6px;
   visibility: visible;
 `;
 export const SelectedTokenContainer = styled.div`
@@ -372,6 +381,7 @@ const DexModal = ({
   asset,
   feeAsset,
   toAsset,
+  crossAsset,
   setShowTokenModal,
   setShowFeeTokenModal,
   setShowToTokenModal,
@@ -380,6 +390,7 @@ const DexModal = ({
   asset: AssetConfig;
   feeAsset: AssetConfig;
   toAsset: AssetConfig;
+  crossAsset: AssetConfig;
   setShowTokenModal: Dispatch<SetStateAction<boolean>>;
   setShowFeeTokenModal: Dispatch<SetStateAction<boolean>>;
   setShowToTokenModal: Dispatch<SetStateAction<boolean>>;
@@ -415,9 +426,25 @@ const DexModal = ({
   const [toChain] = useState("Arbitrum Sepoilla");
 
   const assetBalance = useTokenBalance(asset?.address, asset?.chainId);
-  const toAssetBalance = useTokenBalance(toAsset?.address, toAsset?.chainId);
+  const toAssetBalance = useTokenBalance(
+    crossAsset?.address,
+    crossAsset?.chainId,
+  );
   const feeAssetBalance = useTokenBalance(feeAsset?.address, feeAsset?.chainId);
-
+  const dispatch = useNotification();
+  console.log(toAssetBalance, crossAsset);
+  const HandleNewNotification = useCallback(
+    (title: string, message: string): void => {
+      dispatch({
+        type: "info",
+        message: message,
+        title: title,
+        position: "topR" || "topR",
+        success: true,
+      });
+    },
+    [dispatch],
+  );
   const formatAssetBalance = useMemo(
     () =>
       asset?.decimals
@@ -428,10 +455,10 @@ const DexModal = ({
 
   const formatToAssetBalance = useMemo(
     () =>
-      toAsset?.decimals
-        ? toAssetBalance.balance.shiftedBy(-toAsset.decimals).toFixed(3)
+      crossAsset?.decimals
+        ? toAssetBalance.balance.shiftedBy(-asset.decimals).toFixed(3)
         : 0,
-    [toAssetBalance, toAsset],
+    [toAssetBalance, crossAsset, asset],
   );
 
   const formatFeeAssetBalance = useMemo(
@@ -443,17 +470,17 @@ const DexModal = ({
   );
   const amount = useMemo(
     () =>
-      CurrencyAmount.fromRawAmount(
-        asset
-          ? new ERC20Token(
+      asset
+        ? CurrencyAmount.fromRawAmount(
+            new ERC20Token(
               asset?.chainId,
               asset?.address,
               asset?.decimals,
               asset?.shortName,
-            )
-          : assetsBaseConfig.CAKE,
-        Number(inputValue) * 10 ** asset?.decimals ?? 1,
-      ),
+            ),
+            Number(inputValue) * 10 ** asset?.decimals ?? 1,
+          )
+        : undefined,
     [inputValue, asset],
   );
 
@@ -466,43 +493,36 @@ const DexModal = ({
     },
     [txState],
   );
-
+  console.log(chainId);
   const { data: smartWalletDetails, refetch } = useQuery({
-    queryKey: ["smartWalletDetails", address, chainId ?? 0],
+    queryKey: ["smartWalletDetails", address, asset.chainId ?? 0],
     queryFn: async () => {
-      if (!address || !chainId) return;
-      return SmartWalletRouter.getUserSmartWalletDetails(address, chainId);
+      if (!address || !asset.chainId) return;
+      return SmartWalletRouter.getUserSmartWalletDetails(
+        address,
+        asset.chainId,
+      );
     },
     retry: false,
     refetchOnWindowFocus: false,
-    enabled: Boolean(address && chainId),
+    enabled: Boolean(address && asset.chainId),
   });
 
   const { data: allowance, refetch: refetchAlloance } = useQuery({
     queryKey: [
       "allowance-query",
-      chainId,
       asset?.shortName,
       feeAsset?.shortName,
       address,
-      chainId,
+      asset.chainId,
     ],
     queryFn: async () => {
-      if (
-        !asset ||
-        !chainId ||
-        !address ||
-        !smartWalletDetails ||
-        !amount ||
-        !feeAsset
-      )
-        return undefined;
+      if (!asset.chainId || !address || !amount || !feeAsset) return undefined;
 
       return SmartWalletRouter.getContractAllowance(
-        [feeAsset.address, asset.address],
+        [asset.address, feeAsset.address],
         address,
-        smartWalletDetails?.address,
-        chainId,
+        asset.chainId,
         amount.quotient,
       );
     },
@@ -510,13 +530,12 @@ const DexModal = ({
     refetchInterval: 20000,
     retry: false,
     refetchOnWindowFocus: false,
-    enabled: Boolean(
-      address && asset && chainId && smartWalletDetails && amount,
-    ),
+    enabled: Boolean(address && asset.chainId && amount),
   });
-  const deferQuotientRaw = useDeferredValue(amount.quotient.toString());
+  const deferQuotientRaw = useDeferredValue(amount?.quotient.toString());
   const deferQuotient = useDebounce(deferQuotientRaw, 500);
-  const { data: trade } = useSmartRouterBestTrade({
+
+  const { data: trade, isLoading: isFetchingTrade } = useSmartRouterBestTrade({
     toAsset: toAsset
       ? new ERC20Token(
           toAsset?.chainId,
@@ -524,7 +543,7 @@ const DexModal = ({
           toAsset?.decimals,
           toAsset?.shortName,
         )
-      : assetsBaseConfig.CAKE,
+      : undefined,
     fromAsset: asset
       ? new ERC20Token(
           asset?.chainId,
@@ -532,13 +551,13 @@ const DexModal = ({
           asset?.decimals,
           asset?.shortName,
         )
-      : assetsBaseConfig.CAKE,
-    chainId,
+      : undefined,
+    chainId: asset.chainId,
     account: address,
     amount: amount,
   });
-  console.log(Number(inputValue));
-  const { data: fees } = useQuery({
+  console.log(chainId, currenChain);
+  const { data: fees, isFetching: isFetchingFees } = useQuery({
     queryKey: [
       "fees-query",
       asset?.shortName,
@@ -572,7 +591,13 @@ const DexModal = ({
   });
 
   const swapCallParams = useMemo(() => {
-    if (!trade || !chainId || !allowance || !smartWalletDetails || !address)
+    if (
+      !trade ||
+      !asset.chainId ||
+      !allowance ||
+      !smartWalletDetails ||
+      !address
+    )
       return undefined;
 
     const options = getSmartWalletOptions(
@@ -580,7 +605,7 @@ const DexModal = ({
       true,
       allowance,
       smartWalletDetails as never,
-      chainId,
+      asset.chainId,
       {
         inputAsset: asset.address,
         feeAsset: feeAsset.address,
@@ -589,18 +614,8 @@ const DexModal = ({
       RouterTradeType.SmartWalletTradeWithPermit2,
     );
     return SmartWalletRouter.buildSmartWalletTrade(trade as any, options);
-  }, [
-    trade,
-    address,
-    chainId,
-    allowance,
-    smartWalletDetails,
-    asset,
-    feeAsset,
-    toAsset,
-  ]);
-
-  console.log(fees);
+  }, [trade, address, allowance, smartWalletDetails, asset, feeAsset, toAsset]);
+  console.log(swapCallParams);
   const swap = useCallback(async () => {
     setTx(undefined);
     if (!swapCallParams || !address || !allowance) return;
@@ -675,7 +690,7 @@ const DexModal = ({
           const encodedTransfer =
             await SmartWalletRouter.encodeTransferToRelayer(
               [address, trade?.outputAmount.quotient as any],
-              "0x4860ee416b52b4769CdC2E7876b09c6B77E3BD30",
+              "0x903fC5f46287e7B3C79719c3ce8F4EDBAC8b8b54",
               ChainId.ARBITRUM_SEPOLIA,
             );
           console.log(encodedTransfer);
@@ -692,6 +707,10 @@ const DexModal = ({
         setTXState(ConfirmModalState.COMPLETED);
         refetch();
         console.log(response);
+        HandleNewNotification(
+          "Swap Successful",
+          `https://testnet.bscscan.com/tx/${response.transactionHash}`,
+        );
         return response as TransactionReceipt;
       })
       .catch((err: unknown) => {
@@ -713,7 +732,7 @@ const DexModal = ({
     allowance,
     smartWalletDetails,
   ]);
-
+  console.log(allowance);
   useEffect(() => {
     if (txState === ConfirmModalState.FAILED) {
       setTx(undefined);
@@ -738,7 +757,10 @@ const DexModal = ({
           <div className="flex w-full items-center justify-between pb-2 pt-12">
             <TokenSelectDropdown chainId={97} isFrom />
             <UilArrowRight />
-            <TokenSelectDropdown chainId={1} isFrom={false} />
+            <TokenSelectDropdown
+              chainId={ChainId.ARBITRUM_ONE}
+              isFrom={false}
+            />
           </div>
           <TokenAmountWrapper
             height={swapState === true ? "100px" : "70px"}
@@ -756,18 +778,37 @@ const DexModal = ({
                   type="number"
                 />
 
+                <UilCopy
+                  className="ml-2 h-8 w-8 text-gray-500 hover:cursor-pointer"
+                  onClick={async () => {
+                    await navigator.clipboard.writeText(
+                      asset?.address as string,
+                    );
+                  }}
+                />
                 <TokenSelectButton
                   color={asset ? "rgb(60, 65, 80)" : "rgb(95,111,201)"}
                   onClick={() => setShowTokenModal(true)}
                 >
                   <ButtonContents>
                     <div className="jutsify-center flex flex items-center gap-1 break-words">
-                      {asset && (
-                        <Icon
-                          chainName={asset.Icon as string}
-                          className="h-6 w-6"
-                        />
-                      )}
+                      <div className="relative h-6 w-6">
+                        {asset && (
+                          <Icon
+                            chainName={asset.Icon as string}
+                            className="absolute h-6 w-6"
+                          />
+                        )}
+                        {asset && (
+                          <Icon
+                            chainName={
+                              ChainIdToRenChain[asset.chainId] as string
+                            }
+                            className="absolute left-[50%] top-[45%] h-[14px] w-[14px] bg-black"
+                          />
+                        )}
+                      </div>
+
                       <SelectedToken initialWidth={asset ? true : false}>
                         {asset ? asset.shortName : "From asset"}
                       </SelectedToken>
@@ -799,15 +840,18 @@ const DexModal = ({
                   placeholder={"0.0"}
                   disabled
                   value={
-                    fees
-                      ? Number(fees?.gasCostInBaseToken?.toExact()).toFixed(
-                          5,
-                        ) ??
-                        (
-                          Number(trade?.gasEstimateInUSD?.toExact()) * 12
-                        ).toFixed(5)
+                    fees && inputValue !== ""
+                      ? Number(fees?.gasCostInBaseToken?.toExact()).toFixed(5)
                       : ""
                   }
+                />
+                <UilCopy
+                  className="ml-2 h-8 w-8 text-gray-500 hover:cursor-pointer"
+                  onClick={async () => {
+                    await navigator.clipboard.writeText(
+                      feeAsset?.address as string,
+                    );
+                  }}
                 />
                 <TokenSelectButton
                   color={feeAsset ? "rgb(60, 65, 80)" : "rgb(95,111,201)"}
@@ -815,12 +859,22 @@ const DexModal = ({
                 >
                   <ButtonContents>
                     <div className="jutsify-center flex flex items-center gap-1 break-words">
-                      {feeAsset && (
-                        <Icon
-                          chainName={feeAsset.Icon as string}
-                          className="h-6 w-6"
-                        />
-                      )}
+                      <div className="relative h-6 w-6">
+                        {feeAsset && (
+                          <Icon
+                            chainName={feeAsset.Icon as string}
+                            className="absolute h-6 w-6"
+                          />
+                        )}
+                        {feeAsset && (
+                          <Icon
+                            chainName={
+                              ChainIdToRenChain[feeAsset.chainId] as string
+                            }
+                            className="absolute left-[50%] top-[45%] h-[14px] w-[14px] bg-black"
+                          />
+                        )}
+                      </div>
                       <SelectedToken initialWidth={!feeAsset ? true : false}>
                         {feeAsset ? feeAsset.shortName : "Fee asset"}
                       </SelectedToken>
@@ -831,7 +885,15 @@ const DexModal = ({
               </InfoWrapper>
 
               <div className=" flex w-full justify-between gap-2 text-gray-500">
-                <div className="overflow-ellipsis text-sm">{"Fee cost"}</div>
+                <div className="flex items-center gap-2 overflow-ellipsis text-sm">
+                  <span>{"fee cost"}</span>
+                  {isFetchingFees ||
+                    (isFetchingTrade && (
+                      <UilSpinner
+                        className={"h-5 w-5 animate-spin text-blue-600"}
+                      />
+                    ))}
+                </div>
 
                 {feeAsset && (
                   <div className="overflow-ellipsis text-sm">{`${formatFeeAssetBalance} ${feeAsset?.shortName}`}</div>
@@ -856,21 +918,39 @@ const DexModal = ({
                       : ""
                   }
                 />
+                <UilCopy
+                  className="ml-2 h-8 w-8 text-gray-500 hover:cursor-pointer"
+                  onClick={async () => {
+                    await navigator.clipboard.writeText(
+                      crossAsset?.address as string,
+                    );
+                  }}
+                />
                 {/* <div className="h-full flex-col items-center justify-center gap-4"> */}
                 <TokenSelectButton
-                  color={toAsset ? "rgb(60, 65, 80)" : "rgb(95,111,201)"}
+                  color={crossAsset ? "rgb(60, 65, 80)" : "rgb(95,111,201)"}
                   onClick={() => setShowToTokenModal(true)}
                 >
                   <ButtonContents>
                     <div className="jutsify-center flex flex items-center gap-1 break-words">
-                      {toAsset && (
-                        <Icon
-                          chainName={toAsset.Icon as string}
-                          className="h-6 w-6"
-                        />
-                      )}
-                      <SelectedToken initialWidth={toAsset ? true : false}>
-                        {toAsset ? toAsset.shortName : "To asset"}
+                      <div className="relative h-6 w-6">
+                        {crossAsset && (
+                          <Icon
+                            chainName={crossAsset.Icon as string}
+                            className="absolute h-6 w-6"
+                          />
+                        )}
+                        {crossAsset && (
+                          <Icon
+                            chainName={
+                              ChainIdToRenChain[ChainId.ARBITRUM_ONE] as string
+                            }
+                            className="absolute left-[50%] top-[45%] h-[14px] w-[14px] bg-black"
+                          />
+                        )}
+                      </div>
+                      <SelectedToken initialWidth={crossAsset ? true : false}>
+                        {crossAsset ? crossAsset.shortName : "To asset"}
                       </SelectedToken>
                     </div>
                     <ChevronDown size={"25px"} />
@@ -879,26 +959,40 @@ const DexModal = ({
               </InfoWrapper>
 
               <div className=" flex w-full justify-between gap-2 text-gray-500">
-                <div className="overflow-ellipsis text-sm">{"You receive"}</div>
+                <div className="flex items-center gap-2 overflow-ellipsis text-sm">
+                  <span>{"You receive"}</span>
+                  {isFetchingTrade && (
+                    <UilSpinner
+                      className={"h-5 w-5 animate-spin text-blue-600"}
+                    />
+                  )}
+                </div>
 
-                {toAsset && (
-                  <div className="overflow-ellipsis text-sm">{`${formatToAssetBalance} ${toAsset?.shortName}`}</div>
+                {crossAsset && (
+                  <div className="overflow-ellipsis text-sm">{`${formatToAssetBalance} ${crossAsset?.shortName}`}</div>
                 )}
               </div>
             </div>
           </TokenAmountWrapper>
+
           <ButtonWrapper>
             <Button
-              disabled={!trade?.outputAmount}
+              disabled={!trade?.outputAmount && chainId === asset.chainId}
               insufficentBalance={Number(inputValue) > formatAssetBalance}
-              onClick={swap}
+              onClick={
+                chainId !== asset.chainId
+                  ? () => switchNetwork?.(asset.chainId)
+                  : swap
+              }
               // onClick={async () => connect({ connector: connectors[0] })}
             >
               {pendingTransaction
                 ? "Swapping"
-                : Number(inputValue) > formatAssetBalance
-                  ? "Insufficent balance"
-                  : "Enter An Amount"}
+                : chainId !== asset.chainId
+                  ? "Switch Network"
+                  : Number(inputValue) > formatAssetBalance
+                    ? "Insufficent balance"
+                    : "Enter An Amount"}
             </Button>
           </ButtonWrapper>
         </BridgeModalContainer>

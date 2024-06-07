@@ -2,7 +2,7 @@ import { UilAngleDown } from "@iconscout/react-unicons";
 import type React from "react";
 import { useEffect, useRef, useState } from "react";
 import styled from "styled-components";
-import { useChainId, useSwitchNetwork } from "wagmi";
+import { useChainId, useNetwork, useSwitchNetwork } from "wagmi";
 import { CHAINS, type ChainType } from "~/utils/chains";
 import GreenDot from "../Icons/GreenDot";
 
@@ -36,7 +36,8 @@ export const Breakpoints = {
   xl: 1280,
 };
 const ChainSelect = () => {
-  const chainId = useChainId();
+  const { chain } = useNetwork();
+  const chainId = chain?.id;
   const [isMenuOpen, setIsMenuOpen] = useState<boolean>(false);
   const [activeChain, setActiveChain] = useState<ChainType | undefined>(
     chainId ? CHAINS[chainId!] : undefined,
@@ -110,7 +111,7 @@ const ChainSelectorButton = ({
     >
       {activeChain && <activeChain.logo />}
       <span className=" block w-full text-center">
-        {activeChain ? `${activeChain.chainName}` : "Unknown"}
+        {activeChain ? `${activeChain.chainName}` : "Unknown Network"}
       </span>
       <UilAngleDown className={"mlg:h-8 mlg:w-8 h-5 w-5"} />
     </div>
