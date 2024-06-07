@@ -1,6 +1,6 @@
 import { UilAngleDown } from "@iconscout/react-unicons";
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import styled, { css } from "styled-components";
 import { useAccount, useConnect, useDisconnect } from "wagmi";
 import { useViewport } from "~/hooks/useViewport";
@@ -64,6 +64,7 @@ export const Navbar = () => {
   const { connectors, connect } = useConnect();
   const { disconnect } = useDisconnect();
   const { width } = useViewport();
+  const { push } = useRouter();
 
   const changeBackground = () => {
     if (window.scrollY >= 66) {
@@ -72,6 +73,11 @@ export const Navbar = () => {
       setIsNavbarDark(false);
     }
   };
+
+  const closeConnection = useCallback(() => {
+    disconnect();
+    push("/");
+  }, [push, disconnect]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -95,9 +101,11 @@ export const Navbar = () => {
             <div className="mr-5 flex  h-full items-center">
               <PrimaryButton
                 className="mt-[2px] bg-blue-500 py-[6px] hover:bg-blue-600"
-                onClick={async () =>
-                  !active ? connect({ connector: connectors[0] }) : disconnect()
-                }
+                onClick={async () => {
+                  !active
+                    ? connect({ connector: connectors[0] })
+                    : closeConnection();
+                }}
               >
                 <span className="xs:block mr-2 hidden">
                   {active ? shortenAddress(account) : "Connect"}

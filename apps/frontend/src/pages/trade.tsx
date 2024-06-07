@@ -22,10 +22,10 @@ const TradePage: NextPage = () => {
   const { isConnected } = useAccount();
   const { push } = useRouter();
 
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    if (!isConnected) push("/");
-  }, [isConnected, push]);
+  // useEffect(() => {
+  //   if (typeof window === "undefined") return;
+  //   // if (!isConnected) push("/");
+  // }, [isConnected, push]);
 
   return (
     <>
