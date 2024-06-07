@@ -1,13 +1,12 @@
 import type { ChainId } from '@pancakeswap/chains'
 /* eslint-disable lines-between-class-members */
-import { type Currency, CurrencyAmount, type TradeType, Token } from '@pancakeswap/sdk'
+import { type Currency, CurrencyAmount, type TradeType, type Token } from '@pancakeswap/sdk'
 import type { SmartRouterTrade } from '@pancakeswap/smart-router'
 import type { PancakeSwapOptions } from '@pancakeswap/universal-router-sdk'
 import type { BaseError } from 'abitype'
 import { ethers } from 'ethers'
 import type { Account, Address } from 'viem'
 import { erc20Abi as ERC20ABI, formatTransactionRequest, type Hex, type PublicClient } from 'viem'
-import { getTokenPrices } from '@pancakeswap/price-api-sdk'
 
 import { getContractError, getTransactionError, parseAccount } from 'viem/utils'
 import { smartWalletAbi } from './abis/SmartWalletAbi'
@@ -30,6 +29,7 @@ import { getSmartWallet, getSmartWalletFactory } from './utils/contracts'
 import { AccountNotFoundError } from './utils/error'
 import { typedMetaTx } from './utils/typedMetaTx'
 import { getNativeWrappedToken, getTokenPriceByNumber, getUsdGasToken } from './utils/estimateGas'
+import { CoingeckoIdMap, fetchMultipleTokenUSDPrice } from './utils/price'
 
 function calculateGasMargin(value: bigint, margin = 1000n): bigint {
   return (value * (10000n + margin)) / 10000n
@@ -159,15 +159,30 @@ export abstract class SmartWalletRouter {
       throw new Error(`Unsupported chain . Native wrapped token not found.`)
     }
 
-    const [quoteCurrencyUsdPrice, baseCurrencyUsdPrice, nativeCurrencyUsdPrice] = await getTokenPrices(56, [
-      '0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56',
-      '0x0E09FaBB73Bd3Ade0a17ECC321fD13a19e81cE82',
-      nativeWrappedToken.address,
-    ])
+    const priceDataMap = await fetchMultipleTokenUSDPrice(
+      [outputCurrency.symbol, inputCurrency.symbol, nativeWrappedToken.symbol],
+      [
+        CoingeckoIdMap[outputCurrency.symbol],
+        CoingeckoIdMap[inputCurrency.symbol],
+        CoingeckoIdMap[nativeWrappedToken.symbol],
+      ],
+    )
 
-    const quotePriceInUsd = getTokenPriceByNumber(usdToken, outputCurrency, quoteCurrencyUsdPrice?.priceUSD)
-    const basePriceInUsd = getTokenPriceByNumber(usdToken, inputCurrency, baseCurrencyUsdPrice?.priceUSD)
-    const nativePriceInUsd = getTokenPriceByNumber(usdToken, nativeWrappedToken, nativeCurrencyUsdPrice?.priceUSD)
+    const quotePriceInUsd = getTokenPriceByNumber(
+      usdToken,
+      outputCurrency,
+      Number(priceDataMap[outputCurrency.symbol]?.usd),
+    )
+    const basePriceInUsd = getTokenPriceByNumber(
+      usdToken,
+      inputCurrency,
+      Number(priceDataMap[inputCurrency.symbol]?.usd),
+    )
+    const nativePriceInUsd = getTokenPriceByNumber(
+      usdToken,
+      nativeWrappedToken,
+      Number(priceDataMap[nativeWrappedToken.symbol]?.usd),
+    )
 
     const quotePriceInNative =
       quotePriceInUsd && nativePriceInUsd ? nativePriceInUsd.multiply(quotePriceInUsd.invert()) : undefined

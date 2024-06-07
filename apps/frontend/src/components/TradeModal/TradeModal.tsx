@@ -25,7 +25,6 @@ import {
   useSignTypedData,
   useSwitchNetwork,
 } from "wagmi";
-import { ConfirmModalState } from "~/pages/cross-chain-swap";
 import { type Currency, CurrencyAmount } from "@pancakeswap/swap-sdk-core";
 import { useTokenBalance } from "~/hooks/useBalance";
 import { ChainId } from "@pancakeswap/chains";
@@ -56,6 +55,16 @@ import meshSrc from "../../../public/images/Mesh.png";
 import Image from "next/image";
 import GreenDot from "../Icons/GreenDot";
 
+export enum ConfirmModalState {
+  REVIEWING = -1,
+  APPROVING_TOKEN = 0,
+  PERMITTING = 1,
+  PENDING_CONFIRMATION = 2,
+  SIGNED = 3,
+  EXECUTING = 4,
+  COMPLETED = 5,
+  FAILED = 6,
+}
 const DARK_MODE_GRADIENT =
   "linear-gradient(94deg, rgba(2,20,28,0.8379945728291316) 32%, rgba(2,75,79,0.9500393907563025) 53%, rgba(29,138,191,1) 97%)";
 
@@ -528,7 +537,7 @@ const DexModal = ({
     account: address,
     amount: amount,
   });
-
+  console.log(Number(inputValue));
   const { data: fees } = useQuery({
     queryKey: [
       "fees-query",
@@ -537,21 +546,21 @@ const DexModal = ({
       feeAsset?.shortName,
     ],
     queryFn: async () => {
-      if (!deferQuotient || !feeAsset || !asset || !toAsset) return undefined;
+      if (!trade || !feeAsset || !asset || !toAsset) return undefined;
 
       return SmartWalletRouter.estimateSmartWalletFees({
         feeAsset: feeAsset?.shortName as any,
         inputCurrency: new ERC20Token(
-          toAsset?.chainId,
-          toAsset?.address,
-          toAsset?.decimals,
-          toAsset?.shortName,
-        ),
-        outputCurrency: new ERC20Token(
           asset?.chainId,
           asset?.address,
           asset?.decimals,
           asset?.shortName,
+        ),
+        outputCurrency: new ERC20Token(
+          toAsset?.chainId,
+          toAsset?.address,
+          toAsset?.decimals,
+          toAsset?.shortName,
         ),
       });
     },
@@ -559,7 +568,7 @@ const DexModal = ({
     refetchInterval: 10000,
     retry: false,
     refetchOnWindowFocus: false,
-    enabled: Boolean(asset && toAsset && trade && feeAsset),
+    enabled: Boolean(asset && toAsset && feeAsset && trade),
   });
 
   const swapCallParams = useMemo(() => {
@@ -591,6 +600,7 @@ const DexModal = ({
     toAsset,
   ]);
 
+  console.log(fees);
   const swap = useCallback(async () => {
     setTx(undefined);
     if (!swapCallParams || !address || !allowance) return;
@@ -790,7 +800,9 @@ const DexModal = ({
                   disabled
                   value={
                     fees
-                      ? (Number(fees?.gasCost?.toExact()) * 2).toFixed(5) ??
+                      ? Number(fees?.gasCostInBaseToken?.toExact()).toFixed(
+                          5,
+                        ) ??
                         (
                           Number(trade?.gasEstimateInUSD?.toExact()) * 12
                         ).toFixed(5)

@@ -1,6 +1,6 @@
 import type { Currency } from "@pancakeswap/swap-sdk-core";
 import { useMemo } from "react";
-import { ConfirmModalState } from "~/pages/cross-chain-swap";
+import { ConfirmModalState } from "~/components/TradeModal/TradeModal";
 import type { AssetConfig } from "~/utils/assetsConfig";
 
 export const useTheme = (

@@ -58,6 +58,7 @@
     "@pancakeswap/v3-sdk": "^3.8.0",
     "@uniswap/permit2-sdk": "^1.2.0",
     "abitype": "^1.0.2",
+    "axios": "^1.7.2",
     "chalk": "4.1.2",
     "dotenv": "^16.0.3",
     "lodash": "^4.17.21",
