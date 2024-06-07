@@ -698,6 +698,7 @@ const DexModal = ({
         }
         setTx(response as any);
         setTXState(ConfirmModalState.COMPLETED);
+        setInputValue("");
         refetch();
 
         HandleNewNotification(
