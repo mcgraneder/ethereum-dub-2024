@@ -115,7 +115,7 @@ export const useSmartRouterBestTrade = <selectData = GetTradeQuoteReturnType>(
           quoterOptimization: true,
         },
       );
-      console.log(res, "heyyy");
+
       return res ?? undefined;
     },
     //     enabled: !!(fromAsset && amount && toAsset && account && chainId),

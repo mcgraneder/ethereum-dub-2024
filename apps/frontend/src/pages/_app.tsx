@@ -10,6 +10,7 @@ import { neonDevnet } from "viem/chains";
 
 import { publicClient, noopStorage } from "../config/wagmiConfig";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { TransactionFlowStateProvider } from "~/context/useTransactionFlowState";
 
 export function Providers({ children }: { children: React.ReactNode }) {
   return <SaasProvider>{children}</SaasProvider>;
@@ -36,7 +37,9 @@ const MyApp: AppType = ({ Component, pageProps }) => {
       <QueryClientProvider client={queryClient}>
         <Providers>
           <WagmiConfig config={wagmiconfig}>
-            <Component {...pageProps} />
+            <TransactionFlowStateProvider>
+              <Component {...pageProps} />
+            </TransactionFlowStateProvider>
           </WagmiConfig>
         </Providers>
       </QueryClientProvider>

@@ -46,7 +46,6 @@ const TokenSelectDropdown = ({
   const [activeChain, setActiveChain] = useState<ChainType | undefined>(
     chainId ? CHAINS[chainId!] : undefined,
   );
-  console.log(activeChain);
 
   const { switchNetwork } = useSwitchNetwork();
   const ref = useRef<HTMLDivElement>(null);
@@ -108,11 +107,10 @@ const ChainSelectorButton = ({
   activeChain: ChainType | undefined;
   isFrom: boolean;
 }) => {
-  console.log(activeChain?.chainName);
   return (
     // biome-ignore lint/a11y/useKeyWithClickEvents: <explanation>
     <div
-      className="flex items-center rounded-lg bg-[rgb(60,65,80)] bg-opacity-60 px-2 py-1 text-center hover:cursor-pointer hover:border-gray-500 hover:bg-black hover:bg-opacity-20"
+      className="flex items-center rounded-2xl bg-[rgb(60,65,80)] bg-opacity-60 px-3 py-2 text-center hover:cursor-pointer hover:border-gray-500 hover:bg-black hover:bg-opacity-20"
       onClick={(e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
         e.stopPropagation();
         setIsMenuOpen((o: boolean) => !o);

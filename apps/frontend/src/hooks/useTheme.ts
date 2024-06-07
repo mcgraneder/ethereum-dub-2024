@@ -1,20 +1,21 @@
 import type { Currency } from "@pancakeswap/swap-sdk-core";
 import { useMemo } from "react";
 import { ConfirmModalState } from "~/pages/cross-chain-swap";
+import type { AssetConfig } from "~/utils/assetsConfig";
 
 export const useTheme = (
   txState: ConfirmModalState,
-  asset: Currency,
-  toAsset: Currency,
+  asset: Partial<AssetConfig>,
+  toAsset: Partial<AssetConfig>,
 ) => {
   const transactionStatusDisplay = useMemo(() => {
     switch (txState) {
       case ConfirmModalState.REVIEWING:
-        return `Swap ${asset.symbol} for ${toAsset.symbol}`;
+        return `Swap ${asset?.shortName} for ${toAsset?.shortName}`;
       case ConfirmModalState.APPROVING_TOKEN:
-        return `Approving Smart wallet for ${asset.symbol}`;
+        return `Approving Smart wallet for ${asset?.shortName}`;
       case ConfirmModalState.PERMITTING:
-        return `Permitting Relayer ${asset.symbol}`;
+        return `Permitting Relayer ${asset?.shortName}`;
       case ConfirmModalState.PENDING_CONFIRMATION:
         return "Awaiting Confirmtion";
       case ConfirmModalState.EXECUTING:
@@ -24,7 +25,7 @@ export const useTheme = (
       case ConfirmModalState.FAILED:
         return "transaction Failed";
       default:
-        return `Trade ${asset.symbol}`;
+        return `Trade ${asset?.shortName}`;
     }
   }, [txState, asset, toAsset]);
 

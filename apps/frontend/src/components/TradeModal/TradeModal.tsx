@@ -48,6 +48,9 @@ import {
 import { useRouter } from "next/router";
 import { assetsBaseConfig } from "~/lib/assets";
 import { useTheme } from "~/hooks/useTheme";
+import { AssetConfig } from "~/utils/assetsConfig";
+import { ERC20Token } from "@pancakeswap/sdk";
+import { useTransactionFlow } from "~/context/useTransactionFlowState";
 
 export const GlowSecondary = styled.div`
   position: absolute;
@@ -153,18 +156,19 @@ export const ArrowDownContainer = styled.div`
 export const Button = styled.div`
   height: 55px;
   width: 100%;
-  background: rgb(36, 39, 54);
+  background: ${(props: any) =>
+    props.disabled ? "rgb(36, 39, 54)" : "rgb(13,94,209)"};
   border-radius: 20px;
   text-align: center;
   line-height: 55px;
   font-size: 18px;
-  color: rgb(67, 92, 112);
+  color: ${(props: any) => (props.disabled ? "rgb(67, 92, 112)" : "white")};
   margin-bottom: 5px;
 
   &:hover {
     cursor: pointer;
-    background: rgb(36, 39, 54);
-    color: white;
+    background: ${(props: any) =>
+      props.disabled ? "rgb(36, 39, 54)" : "rgb(33,114,229)"};
   }
 `;
 
@@ -296,23 +300,28 @@ export const BridgeModalContainer = styled.div`
 `;
 
 const DexModal = ({
-  asset1,
-  feeAsset1,
-  toAsset1,
+  asset,
+  feeAsset,
+  toAsset,
   setShowTokenModal,
   setShowFeeTokenModal,
   setShowToTokenModal,
 }: {
-  asset1: any;
-  feeAsset1: any;
-  toAsset1: any;
+  asset: Partial<AssetConfig>;
+  feeAsset: Partial<AssetConfig>;
+  toAsset: Partial<AssetConfig>;
   setShowTokenModal: Dispatch<SetStateAction<boolean>>;
   setShowFeeTokenModal: Dispatch<SetStateAction<boolean>>;
   setShowToTokenModal: Dispatch<SetStateAction<boolean>>;
 }) => {
   const [swapState, setSwapState] = useState(true);
   const toggleSwapState = () => setSwapState(!swapState);
-
+  const {
+    togglePendingModal,
+    toggleRejectedModal,
+    pending,
+    pendingTransaction,
+  } = useTransactionFlow();
   useEffect(() => {
     if (!localStorage.getItem("provider")) window.location.href = "/";
   }, []);
@@ -337,10 +346,6 @@ const DexModal = ({
   const [fromChain] = useState("Bsc Testnet");
   const [toChain] = useState("Arbitrum Sepoilla");
 
-  const [asset] = useState<Currency>(assetsBaseConfig.BUSD);
-  const [toAsset] = useState<Currency>(assetsBaseConfig.CAKE);
-  const [feeAsset] = useState<Currency>(assetsBaseConfig.BUSD);
-
   const assetBalance = useTokenBalance(
     "0x6F451Eb92d7dE92DdF6939d9eFCE6799246B3a4b",
   );
@@ -349,28 +354,28 @@ const DexModal = ({
     ChainId.ARBITRUM_SEPOLIA,
   );
 
-  const { transactionStatusDisplay, primaryColor, secondaryColor } = useTheme(
-    txState,
-    asset,
-    toAsset,
-  );
-
   const formatAssetBalance = useMemo(
-    () => assetBalance.balance.shiftedBy(-asset.decimals).toFixed(3),
+    () =>
+      asset?.decimals
+        ? assetBalance.balance.shiftedBy(-asset.decimals).toFixed(3)
+        : 0,
     [assetBalance, asset],
   );
 
   const formatToAssetBalance = useMemo(
-    () => toAssetBalance.balance.shiftedBy(-toAsset.decimals).toFixed(3),
+    () =>
+      toAsset?.decimals
+        ? toAssetBalance.balance.shiftedBy(-toAsset.decimals).toFixed(3)
+        : 0,
     [toAssetBalance, toAsset],
   );
   const amount = useMemo(
     () =>
       CurrencyAmount.fromRawAmount(
-        asset,
-        Number(inputValue) * 10 ** asset.decimals,
+        assetsBaseConfig.CAKE,
+        Number(inputValue) * 10 ** assetsBaseConfig.CAKE.decimals,
       ),
-    [asset, inputValue],
+    [inputValue],
   );
 
   const handleAmount = useCallback(
@@ -398,8 +403,8 @@ const DexModal = ({
     queryKey: [
       "allowance-query",
       chainId,
-      asset.symbol,
-      feeAsset.symbol,
+      asset?.shortName,
+      feeAsset?.shortName,
       address,
       chainId,
     ],
@@ -415,7 +420,10 @@ const DexModal = ({
         return undefined;
 
       return SmartWalletRouter.getContractAllowance(
-        [feeAsset.wrapped.address, asset.wrapped.address],
+        [
+          assetsBaseConfig.BUSD.wrapped.address,
+          assetsBaseConfig.CAKE.wrapped.address,
+        ],
         address,
         smartWalletDetails?.address,
         chainId,
@@ -432,27 +440,28 @@ const DexModal = ({
   });
   const deferQuotientRaw = useDeferredValue(amount.quotient.toString());
   const deferQuotient = useDebounce(deferQuotientRaw, 500);
-  const {
-    data: trade,
-    isLoading,
-    isFetching,
-  } = useSmartRouterBestTrade({
-    toAsset: toAsset,
-    fromAsset: asset,
+  const { data: trade } = useSmartRouterBestTrade({
+    toAsset: assetsBaseConfig.BUSD,
+    fromAsset: assetsBaseConfig.CAKE,
     chainId,
     account: address,
     amount: amount,
   });
 
   const { data: fees } = useQuery({
-    queryKey: ["fees-query", asset.symbol, toAsset.symbol, feeAsset.symbol],
+    queryKey: [
+      "fees-query",
+      asset?.shortName,
+      toAsset?.shortName,
+      feeAsset?.shortName,
+    ],
     queryFn: async () => {
       if (!deferQuotient || !feeAsset) return undefined;
 
       return SmartWalletRouter.estimateSmartWalletFees({
-        feeAsset: feeAsset.symbol,
-        inputCurrency: asset,
-        outputCurrency: toAsset,
+        feeAsset: feeAsset?.shortName as any,
+        inputCurrency: assetsBaseConfig.CAKE,
+        outputCurrency: assetsBaseConfig.BUSD,
       });
     },
 
@@ -473,28 +482,19 @@ const DexModal = ({
       smartWalletDetails as never,
       chainId,
       {
-        inputAsset: asset.wrapped.address,
-        feeAsset: feeAsset.wrapped.address,
-        outputAsset: toAsset.wrapped.address,
+        inputAsset: assetsBaseConfig.CAKE.wrapped.address,
+        feeAsset: assetsBaseConfig.BUSD.wrapped.address,
+        outputAsset: assetsBaseConfig.BUSD.wrapped.address,
       },
       RouterTradeType.SmartWalletTradeWithPermit2,
     );
     return SmartWalletRouter.buildSmartWalletTrade(trade as any, options);
-  }, [
-    trade,
-    address,
-    chainId,
-    allowance,
-    smartWalletDetails,
-    toAsset,
-    asset,
-    feeAsset,
-  ]);
+  }, [trade, address, chainId, allowance, smartWalletDetails]);
 
   const swap = useCallback(async () => {
     setTx(undefined);
     if (!swapCallParams || !address || !allowance) return;
-
+    togglePendingModal();
     const windowClient = await wagmiconfig.connector?.getWalletClient();
     const externalOps = swapCallParams.externalUserOps;
 
@@ -521,6 +521,7 @@ const DexModal = ({
       primaryType: "ECDSAExec",
     })
       .then(async (signature) => {
+        togglePendingModal();
         setTXState(ConfirmModalState.SIGNED);
         const signatureEncoded = defaultAbiCoder.encode(
           ["uint256", "bytes"],
@@ -585,6 +586,8 @@ const DexModal = ({
       })
       .catch((err: unknown) => {
         console.log(err);
+        if (pending) togglePendingModal();
+        toggleRejectedModal();
         setTXState(ConfirmModalState.FAILED);
         if (err instanceof UserRejectedRequestError) {
           throw new TransactionRejectedRpcError(Error("Transaction rejected"));
@@ -612,12 +615,6 @@ const DexModal = ({
     }
   }, [txState]);
 
-  const router = useRouter();
-
-  const navigateTo = (path: any) => {
-    router.push(path);
-  };
-
   return (
     <>
       <div className="mb-[40px] mt-[100px]">
@@ -641,22 +638,28 @@ const DexModal = ({
           >
             <div className="h-full flex-col items-center justify-center gap-4">
               <InfoWrapper>
-                <TokenInput placeholder={"0.0"} />
+                <TokenInput
+                  placeholder={"0.0"}
+                  onChange={handleAmount}
+                  value={inputValue}
+                  required
+                  type="number"
+                />
 
                 <TokenSelectButton
-                  color={asset1 ? "rgb(60, 65, 80)" : "rgb(13,94,209)"}
+                  color={asset ? "rgb(60, 65, 80)" : "rgb(13,94,209)"}
                   onClick={() => setShowTokenModal(true)}
                 >
                   <ButtonContents>
                     <div className="jutsify-center flex flex items-center gap-1 break-words">
-                      {asset1 && (
+                      {asset && (
                         <Icon
-                          chainName={asset1.Icon as string}
+                          chainName={asset.Icon as string}
                           className="h-6 w-6"
                         />
                       )}
-                      <SelectedToken initialWidth={asset1 ? true : false}>
-                        {asset1 ? asset1.shortName : "From asset"}
+                      <SelectedToken initialWidth={asset ? true : false}>
+                        {asset ? asset.shortName : "From asset"}
                       </SelectedToken>
                     </div>
 
@@ -664,8 +667,10 @@ const DexModal = ({
                   </ButtonContents>
                 </TokenSelectButton>
               </InfoWrapper>
-              <div className="flex w-full justify-end gap-2 px-2 text-gray-500">
-                <div className="overflow-ellipsis text-sm">{`${formatAssetBalance} ${asset.symbol}`}</div>
+              <div className="flex w-full justify-between gap-2  text-gray-500">
+                <div className="overflow-ellipsis text-sm">{"You spend"}</div>
+
+                <div className="overflow-ellipsis text-sm">{`${formatAssetBalance} ${asset?.shortName}`}</div>
               </div>
             </div>
           </TokenAmountWrapper>
@@ -690,27 +695,29 @@ const DexModal = ({
                   }
                 />
                 <TokenSelectButton
-                  color={feeAsset1 ? "rgb(60, 65, 80)" : "rgb(13,94,209)"}
+                  color={feeAsset ? "rgb(60, 65, 80)" : "rgb(13,94,209)"}
                   onClick={() => setShowFeeTokenModal(true)}
                 >
                   <ButtonContents>
                     <div className="jutsify-center flex flex items-center gap-1 break-words">
-                      {feeAsset1 && (
+                      {feeAsset && (
                         <Icon
-                          chainName={feeAsset1.Icon as string}
+                          chainName={feeAsset.Icon as string}
                           className="h-6 w-6"
                         />
                       )}
                       <SelectedToken initialWidth={!feeAsset ? true : false}>
-                        {feeAsset1 ? feeAsset1.shortName : "Fee asset"}
+                        {feeAsset ? feeAsset.shortName : "Fee asset"}
                       </SelectedToken>
                     </div>
                     <ChevronDown size={"25px"} />
                   </ButtonContents>
                 </TokenSelectButton>
               </InfoWrapper>
-              <div className=" flex w-full justify-end gap-2 px-2 text-gray-500">
-                <div className="overflow-ellipsis text-sm">{`${formatToAssetBalance} ${toAsset.symbol}`}</div>
+              <div className=" flex w-full justify-between gap-2 text-gray-500">
+                <div className="overflow-ellipsis text-sm">{"Fee cost"}</div>
+
+                <div className="overflow-ellipsis text-sm">{`${formatToAssetBalance} ${toAsset?.shortName}`}</div>
               </div>
             </div>
           </TokenAmountWrapper>
@@ -733,36 +740,39 @@ const DexModal = ({
                 />
                 {/* <div className="h-full flex-col items-center justify-center gap-4"> */}
                 <TokenSelectButton
-                  color={toAsset1 ? "rgb(60, 65, 80)" : "rgb(13,94,209)"}
+                  color={toAsset ? "rgb(60, 65, 80)" : "rgb(13,94,209)"}
                   onClick={() => setShowToTokenModal(true)}
                 >
                   <ButtonContents>
                     <div className="jutsify-center flex flex items-center gap-1 break-words">
-                      {toAsset1 && (
+                      {toAsset && (
                         <Icon
-                          chainName={toAsset1.Icon as string}
+                          chainName={toAsset.Icon as string}
                           className="h-6 w-6"
                         />
                       )}
-                      <SelectedToken initialWidth={toAsset1 ? true : false}>
-                        {toAsset1 ? toAsset1.shortName : "To asset"}
+                      <SelectedToken initialWidth={toAsset ? true : false}>
+                        {toAsset ? toAsset.shortName : "To asset"}
                       </SelectedToken>
                     </div>
                     <ChevronDown size={"25px"} />
                   </ButtonContents>
                 </TokenSelectButton>
               </InfoWrapper>
-              <div className=" flex w-full justify-end gap-2 px-2 text-gray-500">
-                <div className="overflow-ellipsis text-sm">{`${formatToAssetBalance} ${toAsset.symbol}`}</div>
+              <div className=" flex w-full justify-between gap-2 text-gray-500">
+                <div className="overflow-ellipsis text-sm">{"You receive"}</div>
+
+                <div className="overflow-ellipsis text-sm">{`${formatToAssetBalance} ${toAsset?.shortName}`}</div>
               </div>
             </div>
           </TokenAmountWrapper>
           <ButtonWrapper>
             <Button
-              // onClick={swap}
-              onClick={async () => connect({ connector: connectors[0] })}
+              disabled={!trade?.outputAmount}
+              onClick={swap}
+              // onClick={async () => connect({ connector: connectors[0] })}
             >
-              Enter An Amount
+              {pendingTransaction ? "Swapping" : "Enter An Amount"}
             </Button>
           </ButtonWrapper>
         </BridgeModalContainer>

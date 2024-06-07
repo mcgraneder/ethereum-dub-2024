@@ -2,12 +2,13 @@ import { UilAngleDown } from "@iconscout/react-unicons";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import styled, { css } from "styled-components";
-import { useAccount } from "wagmi";
+import { useAccount, useConnect, useDisconnect } from "wagmi";
 import { useViewport } from "~/hooks/useViewport";
 import AstralLogo from "../../../public/images/astralLogo.png";
 import MetamaskIcon from "../../../public/svgs/metamask-fox.svg";
 import { shortenAddress } from "../../utils/misc";
 import PrimaryButton from "../PrimaryButton/PrimaryButton";
+import { useRouter } from "next/router";
 
 export const Wrapper = styled.div`
   display: flex;
@@ -60,6 +61,8 @@ export const BoxItemContainer = styled.div`
 export const Navbar = () => {
   const [isNavbarDark, setIsNavbarDark] = useState(false);
   const { address: account, isConnected: active } = useAccount();
+  const { connectors, connect } = useConnect();
+  const { disconnect } = useDisconnect();
   const { width } = useViewport();
 
   const changeBackground = () => {
@@ -76,7 +79,6 @@ export const Navbar = () => {
     window.addEventListener("scroll", changeBackground);
   });
 
-  // const Icon = MetamaskIcon;
   return (
     <Wrapper isNavbarDark={isNavbarDark}>
       <Nav>
@@ -93,7 +95,9 @@ export const Navbar = () => {
             <div className="mr-5 flex  h-full items-center">
               <PrimaryButton
                 className="mt-[2px] bg-blue-500 py-[6px] hover:bg-blue-600"
-                onClick={() => null}
+                onClick={async () =>
+                  !active ? connect({ connector: connectors[0] }) : disconnect()
+                }
               >
                 <span className="xs:block mr-2 hidden">
                   {active ? shortenAddress(account) : "Connect"}
