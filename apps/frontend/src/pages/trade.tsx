@@ -44,7 +44,7 @@ const TradePage: NextPage = () => {
         setShowTokenModal={setShowFeeTokenModal}
         visible={showfeeTokenModal}
         setAsset={setFeeAsset}
-        assetFilter={[Asset.BUSD]}
+        assetFilter={[Asset.CAKE]}
       />
       <AssetListModal
         setShowTokenModal={setShowToTokenModal}
