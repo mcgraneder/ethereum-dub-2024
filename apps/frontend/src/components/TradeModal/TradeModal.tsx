@@ -322,9 +322,6 @@ const DexModal = ({
     pending,
     pendingTransaction,
   } = useTransactionFlow();
-  useEffect(() => {
-    if (!localStorage.getItem("provider")) window.location.href = "/";
-  }, []);
 
   const { chain: currenChain } = useNetwork();
 
