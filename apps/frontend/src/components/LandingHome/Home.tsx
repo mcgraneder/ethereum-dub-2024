@@ -63,7 +63,7 @@ const Home = () => {
 
             <div className="mt-4 flex flex-col gap-2">
               <Link
-                href={"/about"}
+                href={"/"}
                 passHref
                 className="focus-visible:ring-primary my-4 flex w-[260px] items-center justify-center rounded-2xl bg-[rgb(116,132,224)] px-4 py-[14px] text-white hover:bg-[rgb(95,111,201)] focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
               >

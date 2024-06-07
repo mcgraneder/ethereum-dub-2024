@@ -61,7 +61,7 @@ export const BoxItemContainer = styled.div`
   align-items: center;
 `;
 
-const ROUTES: string[] = ["home", "trade", "about"];
+const ROUTES: string[] = ["home", "trade"];
 
 const NavLinks = ({ routes }: { routes: string[] }) => {
   return (
