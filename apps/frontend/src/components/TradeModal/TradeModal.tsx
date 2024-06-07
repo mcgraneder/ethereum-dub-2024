@@ -397,23 +397,20 @@ const DexModal = ({
   swapAssets: () => void;
 }) => {
   const [swapState, setSwapState] = useState(true);
-  const toggleSwapState = () => setSwapState(!swapState);
+
   const {
     togglePendingModal,
     toggleRejectedModal,
     pending,
+    setPendingTransaction,
     pendingTransaction,
   } = useTransactionFlow();
 
   const { chain: currenChain } = useNetwork();
-
-  const { address, isConnecting, isConnected } = useAccount();
+  const { address } = useAccount();
   const chainId = useChainId();
-  const { connect, connectors } = useConnect();
-  const { disconnect } = useDisconnect();
 
   const { switchNetwork } = useSwitchNetwork();
-
   const { signTypedDataAsync } = useSignTypedData();
 
   const [txState, setTXState] = useState<ConfirmModalState>(
@@ -422,8 +419,6 @@ const DexModal = ({
 
   const [tx, setTx] = useState<TransactionReceipt | undefined>(undefined);
   const [inputValue, setInputValue] = useState("");
-  const [fromChain] = useState("Bsc Testnet");
-  const [toChain] = useState("Arbitrum Sepoilla");
 
   const assetBalance = useTokenBalance(asset?.address, asset?.chainId);
   const toAssetBalance = useTokenBalance(
@@ -432,7 +427,7 @@ const DexModal = ({
   );
   const feeAssetBalance = useTokenBalance(feeAsset?.address, feeAsset?.chainId);
   const dispatch = useNotification();
-  console.log(toAssetBalance, crossAsset);
+
   const HandleNewNotification = useCallback(
     (title: string, message: string): void => {
       dispatch({
@@ -493,7 +488,7 @@ const DexModal = ({
     },
     [txState],
   );
-  console.log(chainId);
+
   const { data: smartWalletDetails, refetch } = useQuery({
     queryKey: ["smartWalletDetails", address, asset.chainId ?? 0],
     queryFn: async () => {
@@ -532,8 +527,6 @@ const DexModal = ({
     refetchOnWindowFocus: false,
     enabled: Boolean(address && asset.chainId && amount),
   });
-  const deferQuotientRaw = useDeferredValue(amount?.quotient.toString());
-  const deferQuotient = useDebounce(deferQuotientRaw, 500);
 
   const { data: trade, isLoading: isFetchingTrade } = useSmartRouterBestTrade({
     toAsset: toAsset
@@ -556,7 +549,7 @@ const DexModal = ({
     account: address,
     amount: amount,
   });
-  console.log(chainId, currenChain);
+
   const { data: fees, isFetching: isFetchingFees } = useQuery({
     queryKey: [
       "fees-query",
@@ -615,7 +608,7 @@ const DexModal = ({
     );
     return SmartWalletRouter.buildSmartWalletTrade(trade as any, options);
   }, [trade, address, allowance, smartWalletDetails, asset, feeAsset, toAsset]);
-  console.log(swapCallParams);
+
   const swap = useCallback(async () => {
     setTx(undefined);
     if (!swapCallParams || !address || !allowance) return;
@@ -706,11 +699,12 @@ const DexModal = ({
         setTx(response as any);
         setTXState(ConfirmModalState.COMPLETED);
         refetch();
-        console.log(response);
+
         HandleNewNotification(
           "Swap Successful",
           `https://testnet.bscscan.com/tx/${response.transactionHash}`,
         );
+        setPendingTransaction(false);
         return response as TransactionReceipt;
       })
       .catch((err: unknown) => {
@@ -995,7 +989,9 @@ const DexModal = ({
                   ? "Switch Network"
                   : Number(inputValue) > formatAssetBalance
                     ? "Insufficent balance"
-                    : "Enter An Amount"}
+                    : inputValue !== ""
+                      ? "Swap"
+                      : "Enter An Amount"}
             </Button>
           </ButtonWrapper>
         </BridgeModalContainer>

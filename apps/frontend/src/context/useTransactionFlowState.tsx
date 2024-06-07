@@ -1,4 +1,11 @@
-import { createContext, useCallback, useContext, useState } from "react";
+import {
+  Dispatch,
+  SetStateAction,
+  createContext,
+  useCallback,
+  useContext,
+  useState,
+} from "react";
 // import { useGlobalState } from "./useGlobalState";
 
 interface TransactionFlowStateProps {
@@ -16,7 +23,7 @@ type TransactionFlowContextType = {
   toggleRejectedModal: () => void;
   toggleConfirmationModal: () => void;
   toggleSubmittedModal: () => void;
-  // setPendingTransaction: Dispatch<SetStateAction<boolean>>
+  setPendingTransaction: Dispatch<SetStateAction<boolean>>;
   pendingTransaction: boolean;
 };
 
@@ -69,6 +76,7 @@ function TransactionFlowStateProvider({ children }: TransactionFlowStateProps) {
         toggleRejectedModal,
         toggleConfirmationModal,
         toggleSubmittedModal,
+        setPendingTransaction,
         pendingTransaction,
       }}
     >
