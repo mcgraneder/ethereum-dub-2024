@@ -778,36 +778,37 @@ const DexModal = ({
                   type="number"
                 />
 
-                <UilCopy
-                  className="ml-2 h-8 w-8 text-gray-500 hover:cursor-pointer"
-                  onClick={async () => {
-                    await navigator.clipboard.writeText(
-                      asset?.address as string,
-                    );
-                  }}
-                />
+                {asset && (
+                  <UilCopy
+                    className="ml-2 h-8 w-8 text-gray-500 hover:cursor-pointer"
+                    onClick={async () => {
+                      await navigator.clipboard.writeText(
+                        asset?.address as string,
+                      );
+                    }}
+                  />
+                )}
                 <TokenSelectButton
                   color={asset ? "rgb(60, 65, 80)" : "rgb(95,111,201)"}
                   onClick={() => setShowTokenModal(true)}
                 >
                   <ButtonContents>
                     <div className="jutsify-center flex flex items-center gap-1 break-words">
-                      <div className="relative h-6 w-6">
-                        {asset && (
+                      {asset && (
+                        <div className="relative h-6 w-6">
                           <Icon
                             chainName={asset.Icon as string}
                             className="absolute h-6 w-6"
                           />
-                        )}
-                        {asset && (
+
                           <Icon
                             chainName={
                               ChainIdToRenChain[asset.chainId] as string
                             }
                             className="absolute left-[50%] top-[45%] h-[14px] w-[14px] bg-black"
                           />
-                        )}
-                      </div>
+                        </div>
+                      )}
 
                       <SelectedToken initialWidth={asset ? true : false}>
                         {asset ? asset.shortName : "From asset"}
@@ -845,36 +846,37 @@ const DexModal = ({
                       : ""
                   }
                 />
-                <UilCopy
-                  className="ml-2 h-8 w-8 text-gray-500 hover:cursor-pointer"
-                  onClick={async () => {
-                    await navigator.clipboard.writeText(
-                      feeAsset?.address as string,
-                    );
-                  }}
-                />
+                {feeAsset && (
+                  <UilCopy
+                    className="ml-2 h-8 w-8 text-gray-500 hover:cursor-pointer"
+                    onClick={async () => {
+                      await navigator.clipboard.writeText(
+                        feeAsset?.address as string,
+                      );
+                    }}
+                  />
+                )}
                 <TokenSelectButton
                   color={feeAsset ? "rgb(60, 65, 80)" : "rgb(95,111,201)"}
                   onClick={() => setShowFeeTokenModal(true)}
                 >
                   <ButtonContents>
                     <div className="jutsify-center flex flex items-center gap-1 break-words">
-                      <div className="relative h-6 w-6">
-                        {feeAsset && (
+                      {feeAsset && (
+                        <div className="relative h-6 w-6">
                           <Icon
                             chainName={feeAsset.Icon as string}
                             className="absolute h-6 w-6"
                           />
-                        )}
-                        {feeAsset && (
+
                           <Icon
                             chainName={
                               ChainIdToRenChain[feeAsset.chainId] as string
                             }
                             className="absolute left-[50%] top-[45%] h-[14px] w-[14px] bg-black"
                           />
-                        )}
-                      </div>
+                        </div>
+                      )}
                       <SelectedToken initialWidth={!feeAsset ? true : false}>
                         {feeAsset ? feeAsset.shortName : "Fee asset"}
                       </SelectedToken>
@@ -918,14 +920,16 @@ const DexModal = ({
                       : ""
                   }
                 />
-                <UilCopy
-                  className="ml-2 h-8 w-8 text-gray-500 hover:cursor-pointer"
-                  onClick={async () => {
-                    await navigator.clipboard.writeText(
-                      crossAsset?.address as string,
-                    );
-                  }}
-                />
+                {crossAsset && (
+                  <UilCopy
+                    className="ml-2 h-8 w-8 text-gray-500 hover:cursor-pointer"
+                    onClick={async () => {
+                      await navigator.clipboard.writeText(
+                        crossAsset?.address as string,
+                      );
+                    }}
+                  />
+                )}
                 {/* <div className="h-full flex-col items-center justify-center gap-4"> */}
                 <TokenSelectButton
                   color={crossAsset ? "rgb(60, 65, 80)" : "rgb(95,111,201)"}
@@ -933,22 +937,21 @@ const DexModal = ({
                 >
                   <ButtonContents>
                     <div className="jutsify-center flex flex items-center gap-1 break-words">
-                      <div className="relative h-6 w-6">
-                        {crossAsset && (
+                      {crossAsset && (
+                        <div className="relative h-6 w-6">
                           <Icon
                             chainName={crossAsset.Icon as string}
                             className="absolute h-6 w-6"
                           />
-                        )}
-                        {crossAsset && (
+
                           <Icon
                             chainName={
                               ChainIdToRenChain[ChainId.ARBITRUM_ONE] as string
                             }
                             className="absolute left-[50%] top-[45%] h-[14px] w-[14px] bg-black"
                           />
-                        )}
-                      </div>
+                        </div>
+                      )}
                       <SelectedToken initialWidth={crossAsset ? true : false}>
                         {crossAsset ? crossAsset.shortName : "To asset"}
                       </SelectedToken>
