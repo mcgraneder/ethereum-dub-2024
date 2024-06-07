@@ -65,6 +65,7 @@ const ChainSelect = () => {
     };
   }, [isMenuOpen]);
 
+  if (!activeChain) return null;
   return (
     <>
       <div className=" w-fit] relative left-0 h-fit" ref={ref}>

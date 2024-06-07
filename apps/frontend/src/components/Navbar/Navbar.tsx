@@ -130,9 +130,11 @@ export const Navbar = () => {
           </BoxItemContainer>
 
           <BoxItemContainer allignment={"flex-end"}>
-            <div className="mr-12 flex h-full items-center">
-              <ChainSelect />
-            </div>
+            {active && (
+              <div className="mr-12 flex h-full items-center">
+                <ChainSelect />
+              </div>
+            )}
             <div className="mr-5 flex  h-full items-center">
               <PrimaryButton
                 className="mt-[2px] bg-[rgb(116,132,224)] py-[6px] hover:bg-[rgb(136,152,244)]"
