@@ -9,6 +9,9 @@ import MetamaskIcon from "../../../public/svgs/metamask-fox.svg";
 import { shortenAddress } from "../../utils/misc";
 import PrimaryButton from "../PrimaryButton/PrimaryButton";
 import { useRouter } from "next/router";
+import Link from "next/link";
+import TokenSelectDropdown from "../TradeModal/ChainSelector";
+import ChainSelect from "../TradeModal/ChainSelect";
 
 export const Wrapper = styled.div`
   display: flex;
@@ -58,6 +61,28 @@ export const BoxItemContainer = styled.div`
   align-items: center;
 `;
 
+const ROUTES: string[] = ["home", "trade", "about"];
+
+const NavLinks = ({ routes }: { routes: string[] }) => {
+  return (
+    <>
+      {routes.map((route: string, index: number) => {
+        return (
+          <Link
+            href={`/${route === "home" ? "" : route}`}
+            key={route}
+            className="mx-1 hidden flex-row items-center gap-2 md:flex"
+          >
+            <span className="my-2 w-full rounded-xl bg-black bg-opacity-40 px-4 py-2 text-center text-[16px] hover:cursor-pointer hover:bg-black hover:bg-opacity-60">
+              {route}
+            </span>
+          </Link>
+        );
+      })}
+    </>
+  );
+};
+
 export const Navbar = () => {
   const [isNavbarDark, setIsNavbarDark] = useState(false);
   const { address: account, isConnected: active } = useAccount();
@@ -95,12 +120,17 @@ export const Navbar = () => {
                 <Image alt="" src={AstralLogo} className="mx-4 h-10 w-10 " />
               </div>
             )}
+
+            <NavLinks routes={ROUTES} />
           </BoxItemContainer>
 
           <BoxItemContainer allignment={"flex-end"}>
+            <div className="mr-12 flex h-full items-center">
+              <ChainSelect />
+            </div>
             <div className="mr-5 flex  h-full items-center">
               <PrimaryButton
-                className="mt-[2px] bg-blue-500 py-[6px] hover:bg-blue-600"
+                className="mt-[2px] bg-[rgb(116,132,224)] py-[6px] hover:bg-[rgb(136,152,244)]"
                 onClick={async () => {
                   !active
                     ? connect({ connector: connectors[0] })

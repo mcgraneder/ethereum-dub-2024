@@ -48,14 +48,61 @@ import {
 import { useRouter } from "next/router";
 import { assetsBaseConfig } from "~/lib/assets";
 import { useTheme } from "~/hooks/useTheme";
-import { AssetConfig } from "~/utils/assetsConfig";
+import type { AssetConfig } from "~/utils/assetsConfig";
 import { ERC20Token } from "@pancakeswap/sdk";
 import { useTransactionFlow } from "~/context/useTransactionFlowState";
+import { BREAKPOINTS } from "../theme";
+import meshSrc from "../../../public/images/Mesh.png";
+import Image from "next/image";
+import GreenDot from "../Icons/GreenDot";
+
+const DARK_MODE_GRADIENT =
+  "linear-gradient(94deg, rgba(2,20,28,0.8379945728291316) 32%, rgba(2,75,79,0.9500393907563025) 53%, rgba(29,138,191,1) 97%)";
+
+const Banner = styled.div<{ isDarkMode: boolean }>`
+  border-radius: 10px;
+  margin-top: 15px;
+  margin-bottom: 10px;
+  margin-left: 3px;
+  margin-right: 3px;
+  position: relative;
+
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 15px;
+  width: 480px;
+  box-shadow: 0px 10px 24px rgba(51, 53, 72, 0.04);
+  background: rgb(92, 64, 26);
+  background: ${DARK_MODE_GRADIENT};
+  // max-width: 480px;
+
+  /* @media screen and (min-width: ${BREAKPOINTS.lg}px) {
+    height: 140px;
+    flex-direction: row;
+  } */
+`;
+
+const ProtocolBanner = ({ type }: { type: string }) => {
+  return (
+    <Banner>
+      <Image alt="" src={meshSrc} className="absolute" />
+      <div className="flex items-center">
+        <span>Gas Setting</span>
+      </div>
+      <div className="flex items-center justify-center gap-2">
+        <GreenDot />
+        <span>{type}</span>
+      </div>
+    </Banner>
+  );
+};
 
 export const GlowSecondary = styled.div`
   position: absolute;
   top: 40%;
-  left: 41%;
+  left: 35%;
   bottom: 0;
   background: radial-gradient(
     72.04% 72.04% at 50% 10.99%,
@@ -64,7 +111,7 @@ export const GlowSecondary = styled.div`
   );
   filter: blur(90px);
   z-index: -10;
-  max-width: 300px;
+  max-width: 500px;
   width: 100%;
   height: 60%;
 `;
@@ -157,18 +204,31 @@ export const Button = styled.div`
   height: 55px;
   width: 100%;
   background: ${(props: any) =>
-    props.disabled ? "rgb(36, 39, 54)" : "rgb(13,94,209)"};
+    props.insufficentBalance
+      ? "#d6454f"
+      : props.disabled
+        ? "rgb(36, 39, 54)"
+        : "rgb(95,111,201)"};
   border-radius: 20px;
   text-align: center;
   line-height: 55px;
   font-size: 18px;
-  color: ${(props: any) => (props.disabled ? "rgb(67, 92, 112)" : "white")};
+  color: ${(props: any) =>
+    props.insufficentBalance
+      ? "white"
+      : props.disabled
+        ? "rgb(67, 92, 112)"
+        : "white"};
   margin-bottom: 5px;
 
   &:hover {
     cursor: pointer;
     background: ${(props: any) =>
-      props.disabled ? "rgb(36, 39, 54)" : "rgb(33,114,229)"};
+      props.insufficentBalance
+        ? "#d6454f"
+        : props.disabled
+          ? "rgb(36, 39, 54)"
+          : "rgb(136,152,244)"};
   }
 `;
 
@@ -306,13 +366,15 @@ const DexModal = ({
   setShowTokenModal,
   setShowFeeTokenModal,
   setShowToTokenModal,
+  swapAssets,
 }: {
-  asset: Partial<AssetConfig>;
-  feeAsset: Partial<AssetConfig>;
-  toAsset: Partial<AssetConfig>;
+  asset: AssetConfig;
+  feeAsset: AssetConfig;
+  toAsset: AssetConfig;
   setShowTokenModal: Dispatch<SetStateAction<boolean>>;
   setShowFeeTokenModal: Dispatch<SetStateAction<boolean>>;
   setShowToTokenModal: Dispatch<SetStateAction<boolean>>;
+  swapAssets: () => void;
 }) => {
   const [swapState, setSwapState] = useState(true);
   const toggleSwapState = () => setSwapState(!swapState);
@@ -343,13 +405,9 @@ const DexModal = ({
   const [fromChain] = useState("Bsc Testnet");
   const [toChain] = useState("Arbitrum Sepoilla");
 
-  const assetBalance = useTokenBalance(
-    "0x6F451Eb92d7dE92DdF6939d9eFCE6799246B3a4b",
-  );
-  const toAssetBalance = useTokenBalance(
-    "0x4860ee416b52b4769CdC2E7876b09c6B77E3BD30",
-    ChainId.ARBITRUM_SEPOLIA,
-  );
+  const assetBalance = useTokenBalance(asset?.address, asset?.chainId);
+  const toAssetBalance = useTokenBalance(toAsset?.address, toAsset?.chainId);
+  const feeAssetBalance = useTokenBalance(feeAsset?.address, feeAsset?.chainId);
 
   const formatAssetBalance = useMemo(
     () =>
@@ -366,13 +424,28 @@ const DexModal = ({
         : 0,
     [toAssetBalance, toAsset],
   );
+
+  const formatFeeAssetBalance = useMemo(
+    () =>
+      feeAsset?.decimals
+        ? feeAssetBalance.balance.shiftedBy(-feeAsset.decimals).toFixed(3)
+        : 0,
+    [feeAssetBalance, feeAsset],
+  );
   const amount = useMemo(
     () =>
       CurrencyAmount.fromRawAmount(
-        assetsBaseConfig.CAKE,
-        Number(inputValue) * 10 ** assetsBaseConfig.CAKE.decimals,
+        asset
+          ? new ERC20Token(
+              asset?.chainId,
+              asset?.address,
+              asset?.decimals,
+              asset?.shortName,
+            )
+          : assetsBaseConfig.CAKE,
+        Number(inputValue) * 10 ** asset?.decimals ?? 1,
       ),
-    [inputValue],
+    [inputValue, asset],
   );
 
   const handleAmount = useCallback(
@@ -417,10 +490,7 @@ const DexModal = ({
         return undefined;
 
       return SmartWalletRouter.getContractAllowance(
-        [
-          assetsBaseConfig.BUSD.wrapped.address,
-          assetsBaseConfig.CAKE.wrapped.address,
-        ],
+        [feeAsset.address, asset.address],
         address,
         smartWalletDetails?.address,
         chainId,
@@ -438,8 +508,22 @@ const DexModal = ({
   const deferQuotientRaw = useDeferredValue(amount.quotient.toString());
   const deferQuotient = useDebounce(deferQuotientRaw, 500);
   const { data: trade } = useSmartRouterBestTrade({
-    toAsset: assetsBaseConfig.BUSD,
-    fromAsset: assetsBaseConfig.CAKE,
+    toAsset: toAsset
+      ? new ERC20Token(
+          toAsset?.chainId,
+          toAsset?.address,
+          toAsset?.decimals,
+          toAsset?.shortName,
+        )
+      : assetsBaseConfig.CAKE,
+    fromAsset: asset
+      ? new ERC20Token(
+          asset?.chainId,
+          asset?.address,
+          asset?.decimals,
+          asset?.shortName,
+        )
+      : assetsBaseConfig.CAKE,
     chainId,
     account: address,
     amount: amount,
@@ -453,12 +537,22 @@ const DexModal = ({
       feeAsset?.shortName,
     ],
     queryFn: async () => {
-      if (!deferQuotient || !feeAsset) return undefined;
+      if (!deferQuotient || !feeAsset || !asset || !toAsset) return undefined;
 
       return SmartWalletRouter.estimateSmartWalletFees({
         feeAsset: feeAsset?.shortName as any,
-        inputCurrency: assetsBaseConfig.CAKE,
-        outputCurrency: assetsBaseConfig.BUSD,
+        inputCurrency: new ERC20Token(
+          toAsset?.chainId,
+          toAsset?.address,
+          toAsset?.decimals,
+          toAsset?.shortName,
+        ),
+        outputCurrency: new ERC20Token(
+          asset?.chainId,
+          asset?.address,
+          asset?.decimals,
+          asset?.shortName,
+        ),
       });
     },
 
@@ -479,14 +573,23 @@ const DexModal = ({
       smartWalletDetails as never,
       chainId,
       {
-        inputAsset: assetsBaseConfig.CAKE.wrapped.address,
-        feeAsset: assetsBaseConfig.BUSD.wrapped.address,
-        outputAsset: assetsBaseConfig.BUSD.wrapped.address,
+        inputAsset: asset.address,
+        feeAsset: feeAsset.address,
+        outputAsset: toAsset.address,
       },
       RouterTradeType.SmartWalletTradeWithPermit2,
     );
     return SmartWalletRouter.buildSmartWalletTrade(trade as any, options);
-  }, [trade, address, chainId, allowance, smartWalletDetails]);
+  }, [
+    trade,
+    address,
+    chainId,
+    allowance,
+    smartWalletDetails,
+    asset,
+    feeAsset,
+    toAsset,
+  ]);
 
   const swap = useCallback(async () => {
     setTx(undefined);
@@ -614,12 +717,12 @@ const DexModal = ({
 
   return (
     <>
-      <div className="mb-[40px] mt-[100px]">
+      <div className="mb-[40px] mt-[40px] flex flex-col items-center justify-center">
         <BridgeModalContainer>
           {/* <UniswapLogoPink /> */}
           <ErrorText>Swap</ErrorText>
           <CloseIcon />
-          <ArrowDownContainer onClick={toggleSwapState} swapState={swapState}>
+          <ArrowDownContainer onClick={swapAssets} swapState={swapState}>
             <UilAngleDown className={"h-6 w-6"} />
           </ArrowDownContainer>
           <div className="flex w-full items-center justify-between pb-2 pt-12">
@@ -644,7 +747,7 @@ const DexModal = ({
                 />
 
                 <TokenSelectButton
-                  color={asset ? "rgb(60, 65, 80)" : "rgb(13,94,209)"}
+                  color={asset ? "rgb(60, 65, 80)" : "rgb(95,111,201)"}
                   onClick={() => setShowTokenModal(true)}
                 >
                   <ButtonContents>
@@ -664,10 +767,13 @@ const DexModal = ({
                   </ButtonContents>
                 </TokenSelectButton>
               </InfoWrapper>
+
               <div className="flex w-full justify-between gap-2  text-gray-500">
                 <div className="overflow-ellipsis text-sm">{"You spend"}</div>
 
-                <div className="overflow-ellipsis text-sm">{`${formatAssetBalance} ${asset?.shortName}`}</div>
+                {asset && (
+                  <div className="overflow-ellipsis text-sm">{`${formatAssetBalance} ${asset?.shortName}`}</div>
+                )}
               </div>
             </div>
           </TokenAmountWrapper>
@@ -692,7 +798,7 @@ const DexModal = ({
                   }
                 />
                 <TokenSelectButton
-                  color={feeAsset ? "rgb(60, 65, 80)" : "rgb(13,94,209)"}
+                  color={feeAsset ? "rgb(60, 65, 80)" : "rgb(95,111,201)"}
                   onClick={() => setShowFeeTokenModal(true)}
                 >
                   <ButtonContents>
@@ -711,10 +817,13 @@ const DexModal = ({
                   </ButtonContents>
                 </TokenSelectButton>
               </InfoWrapper>
+
               <div className=" flex w-full justify-between gap-2 text-gray-500">
                 <div className="overflow-ellipsis text-sm">{"Fee cost"}</div>
 
-                <div className="overflow-ellipsis text-sm">{`${formatToAssetBalance} ${toAsset?.shortName}`}</div>
+                {feeAsset && (
+                  <div className="overflow-ellipsis text-sm">{`${formatFeeAssetBalance} ${feeAsset?.shortName}`}</div>
+                )}
               </div>
             </div>
           </TokenAmountWrapper>
@@ -737,7 +846,7 @@ const DexModal = ({
                 />
                 {/* <div className="h-full flex-col items-center justify-center gap-4"> */}
                 <TokenSelectButton
-                  color={toAsset ? "rgb(60, 65, 80)" : "rgb(13,94,209)"}
+                  color={toAsset ? "rgb(60, 65, 80)" : "rgb(95,111,201)"}
                   onClick={() => setShowToTokenModal(true)}
                 >
                   <ButtonContents>
@@ -756,24 +865,62 @@ const DexModal = ({
                   </ButtonContents>
                 </TokenSelectButton>
               </InfoWrapper>
+
               <div className=" flex w-full justify-between gap-2 text-gray-500">
                 <div className="overflow-ellipsis text-sm">{"You receive"}</div>
 
-                <div className="overflow-ellipsis text-sm">{`${formatToAssetBalance} ${toAsset?.shortName}`}</div>
+                {toAsset && (
+                  <div className="overflow-ellipsis text-sm">{`${formatToAssetBalance} ${toAsset?.shortName}`}</div>
+                )}
               </div>
             </div>
           </TokenAmountWrapper>
           <ButtonWrapper>
             <Button
               disabled={!trade?.outputAmount}
+              insufficentBalance={Number(inputValue) > formatAssetBalance}
               onClick={swap}
               // onClick={async () => connect({ connector: connectors[0] })}
             >
-              {pendingTransaction ? "Swapping" : "Enter An Amount"}
+              {pendingTransaction
+                ? "Swapping"
+                : Number(inputValue) > formatAssetBalance
+                  ? "Insufficent balance"
+                  : "Enter An Amount"}
             </Button>
           </ButtonWrapper>
         </BridgeModalContainer>
         {/* <GlowSecondary /> */}
+        <div className="flex w-[440px] items-center justify-between">
+          {/* biome-ignore lint/a11y/useKeyWithClickEvents: <explanation> */}
+          <div
+            className={`${"text-gray-500"} font-sm my-1 hover:cursor-pointer hover:text-gray-400`}
+            onClick={async () =>
+              await SmartWalletRouter.encodeTransferToRelayer(
+                // biome-ignore lint/suspicious/noExplicitAny: <explanation>
+                [address as any, (10n * 10n ** 18n) as any],
+                "0x6F451Eb92d7dE92DdF6939d9eFCE6799246B3a4b",
+                ChainId.BSC_TESTNET,
+              )
+            }
+          >
+            {"Get Test BUSD"}
+          </div>
+          {/* biome-ignore lint/a11y/useKeyWithClickEvents: <explanation> */}
+          <div
+            className={`${"text-gray-500"} font-sm my-1 hover:cursor-pointer hover:text-gray-400`}
+            onClick={async () =>
+              await SmartWalletRouter.encodeTransferToRelayer(
+                // biome-ignore lint/suspicious/noExplicitAny: <explanation>
+                [address as any, (10n * 10n ** 18n) as any],
+                "0x6F451Eb92d7dE92DdF6939d9eFCE6799246B3a4b",
+                ChainId.BSC_TESTNET,
+              )
+            }
+          >
+            {"Get Test CAKE"}
+          </div>
+        </div>
       </div>
       <GlowSecondary />
     </>

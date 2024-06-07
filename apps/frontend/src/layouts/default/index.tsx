@@ -90,13 +90,14 @@ function DefaultLayout({ children }: DefaultLayoutProps) {
   }, [chainId]);
 
   useEffect(() => {
+    if (!loading) return;
     const interval: NodeJS.Timeout = setTimeout(() => setLoading(false), 3800);
     return () => clearTimeout(interval);
   }, []);
 
   return (
     <>
-      {loading ? (
+      {loading && pathname === "/" ? (
         <AppLoader />
       ) : (
         <G visible={false}>

@@ -1,4 +1,6 @@
+import { ChainId } from "@pancakeswap/chains";
 import type { Chain } from "./chainColours";
+import { Address } from "viem";
 
 export type AssetIconsConfig = {
   Icon: string | null;
@@ -8,6 +10,8 @@ export type AssetLabelsConfig = {
   shortName: string;
   fullName: string;
   decimals: number;
+  chainId: ChainId;
+  address: Address;
 };
 
 export enum AssetRateService {
@@ -22,13 +26,6 @@ export type AssetRateConfig = {
 export type AssetBaseConfig = AssetIconsConfig &
   AssetLabelsConfig &
   AssetRateConfig & {};
-
-const unsetAssetConfig: AssetBaseConfig = {
-  Icon: null,
-  shortName: "",
-  fullName: "",
-  decimals: 18,
-};
 
 export enum Asset {
   BUSD = "BUSD",
@@ -81,6 +78,8 @@ export const assetsBaseConfig: Record<Asset, AssetBaseConfig> = {
     fullName: "Binance USD",
     rateService: AssetRateService.Coingecko,
     rateSymbol: "binance-usd",
+    address: "0x6F451Eb92d7dE92DdF6939d9eFCE6799246B3a4b",
+    chainId: ChainId.BSC_TESTNET,
     decimals: 18,
   },
   CAKE: {
@@ -90,6 +89,8 @@ export const assetsBaseConfig: Record<Asset, AssetBaseConfig> = {
     fullName: "PancakeSwap Token",
     rateService: AssetRateService.Coingecko,
     rateSymbol: "cake",
+    address: "0x501B55184813f7a29eb98DECD8EC9B6D07DEB263",
+    chainId: ChainId.BSC_TESTNET,
     decimals: 18,
   },
   AVAX: {
@@ -99,6 +100,8 @@ export const assetsBaseConfig: Record<Asset, AssetBaseConfig> = {
     fullName: "Avalanche",
     rateService: AssetRateService.Coingecko,
     rateSymbol: "avalanche-2",
+    address: "0x6F451Eb92d7dE92DdF6939d9eFCE6799246B3a4b",
+    chainId: ChainId.BSC_TESTNET,
     decimals: 18,
   },
   ArbETH: {
@@ -108,6 +111,8 @@ export const assetsBaseConfig: Record<Asset, AssetBaseConfig> = {
     fullName: "Arbitrum Ether",
     rateService: AssetRateService.Coingecko,
     rateSymbol: "weth",
+    address: "0x6F451Eb92d7dE92DdF6939d9eFCE6799246B3a4b",
+    chainId: ChainId.BSC_TESTNET,
     decimals: 18, // simple hack for duplicated ethereum entry
   },
   BADGER: {
@@ -117,6 +122,8 @@ export const assetsBaseConfig: Record<Asset, AssetBaseConfig> = {
     fullName: "Badger DAO",
     rateService: AssetRateService.Coingecko,
     rateSymbol: "badger-dao",
+    address: "0x6F451Eb92d7dE92DdF6939d9eFCE6799246B3a4b",
+    chainId: ChainId.BSC_TESTNET,
     decimals: 18,
   },
   BNB: {
@@ -126,6 +133,8 @@ export const assetsBaseConfig: Record<Asset, AssetBaseConfig> = {
     fullName: "Binance Coin",
     rateService: AssetRateService.Coingecko,
     rateSymbol: "binancecoin",
+    address: "0x6F451Eb92d7dE92DdF6939d9eFCE6799246B3a4b",
+    chainId: ChainId.BSC_TESTNET,
     decimals: 18,
   },
   BCH: {
@@ -135,6 +144,8 @@ export const assetsBaseConfig: Record<Asset, AssetBaseConfig> = {
     fullName: "Bitcoin Cash",
     rateService: AssetRateService.Coingecko,
     rateSymbol: "bitcoin-cash",
+    address: "0x6F451Eb92d7dE92DdF6939d9eFCE6799246B3a4b",
+    chainId: ChainId.BSC_TESTNET,
     decimals: 8,
   },
 
@@ -145,6 +156,8 @@ export const assetsBaseConfig: Record<Asset, AssetBaseConfig> = {
     fullName: "Bitcoin",
     rateService: AssetRateService.Coingecko,
     rateSymbol: "bitcoin",
+    address: "0x6F451Eb92d7dE92DdF6939d9eFCE6799246B3a4b",
+    chainId: ChainId.BSC_TESTNET,
     decimals: 8,
   },
 
@@ -155,6 +168,8 @@ export const assetsBaseConfig: Record<Asset, AssetBaseConfig> = {
     fullName: "Curve DAO Token",
     rateService: AssetRateService.Coingecko,
     rateSymbol: "curve-dao-token",
+    address: "0x6F451Eb92d7dE92DdF6939d9eFCE6799246B3a4b",
+    chainId: ChainId.BSC_TESTNET,
     decimals: 18,
   },
   DAI: {
@@ -164,6 +179,8 @@ export const assetsBaseConfig: Record<Asset, AssetBaseConfig> = {
     fullName: "Dai",
     rateService: AssetRateService.Coingecko,
     rateSymbol: "dai",
+    address: "0x6F451Eb92d7dE92DdF6939d9eFCE6799246B3a4b",
+    chainId: ChainId.BSC_TESTNET,
     decimals: 18,
   },
   DGB: {
@@ -173,6 +190,8 @@ export const assetsBaseConfig: Record<Asset, AssetBaseConfig> = {
     fullName: "DigiByte",
     rateService: AssetRateService.Coingecko,
     rateSymbol: "digibyte",
+    address: "0x6F451Eb92d7dE92DdF6939d9eFCE6799246B3a4b",
+    chainId: ChainId.BSC_TESTNET,
     decimals: 18,
   },
   DOGE: {
@@ -182,6 +201,8 @@ export const assetsBaseConfig: Record<Asset, AssetBaseConfig> = {
     fullName: "Dogecoin",
     rateService: AssetRateService.Coingecko,
     rateSymbol: "dogecoin",
+    address: "0x6F451Eb92d7dE92DdF6939d9eFCE6799246B3a4b",
+    chainId: ChainId.BSC_TESTNET,
     decimals: 18,
   },
   ETH: {
@@ -191,6 +212,8 @@ export const assetsBaseConfig: Record<Asset, AssetBaseConfig> = {
     fullName: "Ether",
     rateService: AssetRateService.Coingecko,
     rateSymbol: "ethereum",
+    address: "0x6F451Eb92d7dE92DdF6939d9eFCE6799246B3a4b",
+    chainId: ChainId.BSC_TESTNET,
     decimals: 18,
   },
   EURT: {
@@ -200,6 +223,8 @@ export const assetsBaseConfig: Record<Asset, AssetBaseConfig> = {
     fullName: "Euro Tether",
     rateService: AssetRateService.Coingecko,
     rateSymbol: "euro-tether",
+    address: "0x6F451Eb92d7dE92DdF6939d9eFCE6799246B3a4b",
+    chainId: ChainId.BSC_TESTNET,
     decimals: 18,
   },
   FIL: {
@@ -209,6 +234,8 @@ export const assetsBaseConfig: Record<Asset, AssetBaseConfig> = {
     fullName: "Filecoin",
     rateService: AssetRateService.Coingecko,
     rateSymbol: "filecoin",
+    address: "0x6F451Eb92d7dE92DdF6939d9eFCE6799246B3a4b",
+    chainId: ChainId.BSC_TESTNET,
     decimals: 18,
   },
   FTM: {
@@ -218,6 +245,8 @@ export const assetsBaseConfig: Record<Asset, AssetBaseConfig> = {
     fullName: "Fantom",
     rateService: AssetRateService.Coingecko,
     rateSymbol: "fantom",
+    address: "0x6F451Eb92d7dE92DdF6939d9eFCE6799246B3a4b",
+    chainId: ChainId.BSC_TESTNET,
     decimals: 18,
   },
   FTT: {
@@ -227,6 +256,8 @@ export const assetsBaseConfig: Record<Asset, AssetBaseConfig> = {
     fullName: "FTX Token",
     rateService: AssetRateService.Coingecko,
     rateSymbol: "ftx-token",
+    address: "0x6F451Eb92d7dE92DdF6939d9eFCE6799246B3a4b",
+    chainId: ChainId.BSC_TESTNET,
     decimals: 18,
   },
   GLMR: {
@@ -236,6 +267,8 @@ export const assetsBaseConfig: Record<Asset, AssetBaseConfig> = {
     fullName: "Glimmer",
     rateService: AssetRateService.Coingecko,
     rateSymbol: "moonbeam",
+    address: "0x6F451Eb92d7dE92DdF6939d9eFCE6799246B3a4b",
+    chainId: ChainId.BSC_TESTNET,
     decimals: 18,
   },
   KAVA: {
@@ -245,6 +278,8 @@ export const assetsBaseConfig: Record<Asset, AssetBaseConfig> = {
     fullName: "Kava",
     rateService: AssetRateService.Coingecko,
     rateSymbol: "kava",
+    address: "0x6F451Eb92d7dE92DdF6939d9eFCE6799246B3a4b",
+    chainId: ChainId.BSC_TESTNET,
     decimals: 18,
   },
   KNC: {
@@ -254,6 +289,8 @@ export const assetsBaseConfig: Record<Asset, AssetBaseConfig> = {
     fullName: "Kyber Network Crystal",
     rateService: AssetRateService.Coingecko,
     rateSymbol: "kyber-network-crystal",
+    address: "0x6F451Eb92d7dE92DdF6939d9eFCE6799246B3a4b",
+    chainId: ChainId.BSC_TESTNET,
     decimals: 18,
   },
   LINK: {
@@ -263,6 +300,8 @@ export const assetsBaseConfig: Record<Asset, AssetBaseConfig> = {
     fullName: "Chainlink",
     rateService: AssetRateService.Coingecko,
     rateSymbol: "chainlink",
+    address: "0x6F451Eb92d7dE92DdF6939d9eFCE6799246B3a4b",
+    chainId: ChainId.BSC_TESTNET,
     decimals: 18,
   },
   LUNA: {
@@ -272,6 +311,8 @@ export const assetsBaseConfig: Record<Asset, AssetBaseConfig> = {
     fullName: "Terra",
     rateService: AssetRateService.Coingecko,
     rateSymbol: "terra-luna",
+    address: "0x6F451Eb92d7dE92DdF6939d9eFCE6799246B3a4b",
+    chainId: ChainId.BSC_TESTNET,
     decimals: 18,
   },
   MATIC: {
@@ -281,6 +322,8 @@ export const assetsBaseConfig: Record<Asset, AssetBaseConfig> = {
     fullName: "Polygon",
     rateService: AssetRateService.Coingecko,
     rateSymbol: "polygon",
+    address: "0x6F451Eb92d7dE92DdF6939d9eFCE6799246B3a4b",
+    chainId: ChainId.BSC_TESTNET,
     decimals: 18,
   },
   MIM: {
@@ -290,6 +333,8 @@ export const assetsBaseConfig: Record<Asset, AssetBaseConfig> = {
     fullName: "Magic Internet Money",
     rateService: AssetRateService.Coingecko,
     rateSymbol: "magic-internet-money",
+    address: "0x6F451Eb92d7dE92DdF6939d9eFCE6799246B3a4b",
+    chainId: ChainId.BSC_TESTNET,
     decimals: 18,
   },
   REN: {
@@ -299,6 +344,8 @@ export const assetsBaseConfig: Record<Asset, AssetBaseConfig> = {
     fullName: "REN",
     rateService: AssetRateService.Coingecko,
     rateSymbol: "republic-protocol",
+    address: "0x6F451Eb92d7dE92DdF6939d9eFCE6799246B3a4b",
+    chainId: ChainId.BSC_TESTNET,
     decimals: 18,
   },
   ROOK: {
@@ -308,6 +355,8 @@ export const assetsBaseConfig: Record<Asset, AssetBaseConfig> = {
     fullName: "KeeperDAO",
     rateService: AssetRateService.Coingecko,
     rateSymbol: "rook",
+    address: "0x6F451Eb92d7dE92DdF6939d9eFCE6799246B3a4b",
+    chainId: ChainId.BSC_TESTNET,
     decimals: 18,
   },
   SUSHI: {
@@ -317,6 +366,8 @@ export const assetsBaseConfig: Record<Asset, AssetBaseConfig> = {
     fullName: "Sushi",
     rateService: AssetRateService.Coingecko,
     rateSymbol: "sushi",
+    address: "0x6F451Eb92d7dE92DdF6939d9eFCE6799246B3a4b",
+    chainId: ChainId.BSC_TESTNET,
     decimals: 18,
   },
   SOL: {
@@ -326,6 +377,8 @@ export const assetsBaseConfig: Record<Asset, AssetBaseConfig> = {
     fullName: "Solana",
     rateService: AssetRateService.Coingecko,
     rateSymbol: "solana",
+    address: "0x6F451Eb92d7dE92DdF6939d9eFCE6799246B3a4b",
+    chainId: ChainId.BSC_TESTNET,
     decimals: 18,
   },
   UNI: {
@@ -335,6 +388,8 @@ export const assetsBaseConfig: Record<Asset, AssetBaseConfig> = {
     fullName: "Uniswap",
     rateService: AssetRateService.Coingecko,
     rateSymbol: "uniswap",
+    address: "0x6F451Eb92d7dE92DdF6939d9eFCE6799246B3a4b",
+    chainId: ChainId.BSC_TESTNET,
     decimals: 18,
   },
   USDC: {
@@ -344,6 +399,8 @@ export const assetsBaseConfig: Record<Asset, AssetBaseConfig> = {
     fullName: "USD Coin",
     rateService: AssetRateService.Coingecko,
     rateSymbol: "usd-coin",
+    address: "0x6F451Eb92d7dE92DdF6939d9eFCE6799246B3a4b",
+    chainId: ChainId.BSC_TESTNET,
     decimals: 6,
   },
   USDT: {
@@ -353,6 +410,8 @@ export const assetsBaseConfig: Record<Asset, AssetBaseConfig> = {
     fullName: "Tether",
     rateService: AssetRateService.Coingecko,
     rateSymbol: "tether",
+    address: "0x6F451Eb92d7dE92DdF6939d9eFCE6799246B3a4b",
+    chainId: ChainId.BSC_TESTNET,
     decimals: 6,
   },
   ZEC: {
@@ -362,6 +421,8 @@ export const assetsBaseConfig: Record<Asset, AssetBaseConfig> = {
     fullName: "Zcash",
     rateService: AssetRateService.Coingecko,
     rateSymbol: "zcash",
+    address: "0x6F451Eb92d7dE92DdF6939d9eFCE6799246B3a4b",
+    chainId: ChainId.BSC_TESTNET,
     decimals: 8,
   },
   gETH: {
@@ -371,6 +432,8 @@ export const assetsBaseConfig: Record<Asset, AssetBaseConfig> = {
     fullName: "Goerli Ether",
     rateService: AssetRateService.Coingecko,
     rateSymbol: "ethereum",
+    address: "0x6F451Eb92d7dE92DdF6939d9eFCE6799246B3a4b",
+    chainId: ChainId.BSC_TESTNET,
     decimals: 18,
   },
   oETH: {
@@ -380,6 +443,8 @@ export const assetsBaseConfig: Record<Asset, AssetBaseConfig> = {
     fullName: "Optimism Ether",
     rateService: AssetRateService.Coingecko,
     rateSymbol: "ethereum",
+    address: "0x6F451Eb92d7dE92DdF6939d9eFCE6799246B3a4b",
+    chainId: ChainId.BSC_TESTNET,
     decimals: 18,
   },
   USDT_Goerli: {
@@ -389,6 +454,8 @@ export const assetsBaseConfig: Record<Asset, AssetBaseConfig> = {
     fullName: "Tether",
     rateService: AssetRateService.Coingecko,
     rateSymbol: "tether",
+    address: "0x6F451Eb92d7dE92DdF6939d9eFCE6799246B3a4b",
+    chainId: ChainId.BSC_TESTNET,
     decimals: 6,
   },
   USDC_Goerli: {
@@ -398,6 +465,8 @@ export const assetsBaseConfig: Record<Asset, AssetBaseConfig> = {
     fullName: "USD Coin",
     rateService: AssetRateService.Coingecko,
     rateSymbol: "usd-coin",
+    address: "0x6F451Eb92d7dE92DdF6939d9eFCE6799246B3a4b",
+    chainId: ChainId.BSC_TESTNET,
     decimals: 6,
   },
   REN_Goerli: {
@@ -407,6 +476,8 @@ export const assetsBaseConfig: Record<Asset, AssetBaseConfig> = {
     fullName: "REN",
     rateService: AssetRateService.Coingecko,
     rateSymbol: "republic-protocol",
+    address: "0x6F451Eb92d7dE92DdF6939d9eFCE6799246B3a4b",
+    chainId: ChainId.BSC_TESTNET,
     decimals: 18,
   },
   DAI_Goerli: {
@@ -416,6 +487,8 @@ export const assetsBaseConfig: Record<Asset, AssetBaseConfig> = {
     fullName: "Dai",
     rateService: AssetRateService.Coingecko,
     rateSymbol: "dai",
+    address: "0x6F451Eb92d7dE92DdF6939d9eFCE6799246B3a4b",
+    chainId: ChainId.BSC_TESTNET,
     decimals: 18,
   },
   ASTRAL_USDT: {
@@ -425,6 +498,8 @@ export const assetsBaseConfig: Record<Asset, AssetBaseConfig> = {
     fullName: "ASTRAL_USDT",
     rateService: AssetRateService.Coingecko,
     rateSymbol: "tether",
+    address: "0x6F451Eb92d7dE92DdF6939d9eFCE6799246B3a4b",
+    chainId: ChainId.BSC_TESTNET,
     decimals: 6,
   },
 };

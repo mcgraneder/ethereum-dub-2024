@@ -1,7 +1,7 @@
 import type { NextPage } from "next";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import AssetListModal from "~/components/AssetListModal/AssetListModal";
-import { whiteListedEVMAssets } from "~/utils/assetsConfig";
+import { assetsBaseConfig, whiteListedEVMAssets } from "~/utils/assetsConfig";
 import { Asset } from "~/utils/chainColours";
 import DexModal from "../components/TradeModal/TradeModal";
 import { Layout } from "../layouts";
@@ -15,13 +15,17 @@ const TradePage: NextPage = () => {
   const [showToTokenModal, setShowToTokenModal] = useState<boolean>(false);
   const [text, setText] = useState<string>("");
 
-  const [asset, setAsset] = useState<any>(undefined);
+  const [asset, setAsset] = useState<any>(assetsBaseConfig.CAKE);
   const [feeAsset, setFeeAsset] = useState<any>(undefined);
   const [toAsset, setToAsset] = useState<any>(undefined);
 
   const { isConnected } = useAccount();
   const { push } = useRouter();
 
+  const swapAssets = useCallback(() => {
+    setAsset(toAsset);
+    setToAsset(asset);
+  }, [asset, toAsset]);
   // useEffect(() => {
   //   if (typeof window === "undefined") return;
   //   // if (!isConnected) push("/");
@@ -58,6 +62,7 @@ const TradePage: NextPage = () => {
           setShowTokenModal={setShowTokenModal}
           setShowFeeTokenModal={setShowFeeTokenModal}
           setShowToTokenModal={setShowToTokenModal}
+          swapAssets={swapAssets}
         />
       </Layout>
     </>
