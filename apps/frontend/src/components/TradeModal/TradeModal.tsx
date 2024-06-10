@@ -38,7 +38,7 @@ import {
   RouterTradeType,
   SmartWalletRouter,
 } from "@eth-dub-2024/router-sdk";
-import { useQuery } from "@tanstack/react-query";
+import { isCancelledError, useQuery } from "@tanstack/react-query";
 import useDebounce from "~/hooks/useDebounce";
 import { useSmartRouterBestTrade } from "~/hooks/useSmartRouterBestTrade";
 import { getSmartWalletOptions } from "~/utils/getSmartWalletOptions";
@@ -408,6 +408,7 @@ const DexModal = ({
 
   const { chain: currenChain } = useNetwork();
   const { address } = useAccount();
+  const { connectors, connect } = useConnect();
   const chainId = useChainId();
 
   const { switchNetwork } = useSwitchNetwork();
@@ -427,6 +428,10 @@ const DexModal = ({
   );
   const feeAssetBalance = useTokenBalance(feeAsset?.address, feeAsset?.chainId);
   const dispatch = useNotification();
+
+  const enableConnection = useCallback(() => {
+    connect({ connector: connectors[0] });
+  }, [connect, connectors]);
 
   const HandleNewNotification = useCallback(
     (title: string, message: string): void => {
@@ -978,21 +983,25 @@ const DexModal = ({
               disabled={!trade?.outputAmount && chainId === asset.chainId}
               insufficentBalance={Number(inputValue) > formatAssetBalance}
               onClick={
-                chainId !== asset.chainId
-                  ? () => switchNetwork?.(asset.chainId)
-                  : swap
+                !address
+                  ? enableConnection()
+                  : chainId !== asset.chainId
+                    ? () => switchNetwork?.(asset.chainId)
+                    : swap
               }
               // onClick={async () => connect({ connector: connectors[0] })}
             >
-              {pendingTransaction
-                ? "Swapping"
-                : chainId !== asset.chainId
-                  ? "Switch Network"
-                  : Number(inputValue) > formatAssetBalance
-                    ? "Insufficent balance"
-                    : inputValue !== ""
-                      ? "Swap"
-                      : "Enter An Amount"}
+              {!address
+                ? "Connect Wallet"
+                : pendingTransaction
+                  ? "Swapping"
+                  : chainId !== asset.chainId
+                    ? "Switch Network"
+                    : Number(inputValue) > formatAssetBalance
+                      ? "Insufficent balance"
+                      : inputValue !== ""
+                        ? "Swap"
+                        : "Enter An Amount"}
             </Button>
           </ButtonWrapper>
         </BridgeModalContainer>
@@ -1019,7 +1028,7 @@ const DexModal = ({
               await SmartWalletRouter.encodeTransferToRelayer(
                 // biome-ignore lint/suspicious/noExplicitAny: <explanation>
                 [address as any, (10n * 10n ** 18n) as any],
-                "0x6F451Eb92d7dE92DdF6939d9eFCE6799246B3a4b",
+                "0x501B55184813f7a29eb98DECD8EC9B6D07DEB263",
                 ChainId.BSC_TESTNET,
               )
             }

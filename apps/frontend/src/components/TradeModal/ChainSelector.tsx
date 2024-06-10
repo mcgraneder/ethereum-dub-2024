@@ -139,7 +139,7 @@ const ChainSelector = ({
     // biome-ignore lint/a11y/useKeyWithClickEvents: <explanation>
     <div
       className="hover:bg-tertiary flex flex-row items-center gap-3 rounded-lg px-2 py-2 hover:cursor-pointer"
-      onClick={() => switchNetwork(chain.id)}
+      onClick={() => null}
     >
       <div className="flex h-full">
         <chain.logo className={"h-5 w-5"} />
