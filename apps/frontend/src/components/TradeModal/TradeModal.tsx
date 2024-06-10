@@ -63,6 +63,7 @@ import { SpinnerWrapper } from "../CSS/WalletModalStyles";
 import { ChainIdToRenChain } from "~/utils/chains";
 import { useNotification } from "~/context/useNotificationState";
 import { shortenAddress } from "~/utils/misc";
+import Link from "next/link";
 
 export enum ConfirmModalState {
   REVIEWING = -1,
@@ -1025,7 +1026,17 @@ const DexModal = ({
                 )
               }
             >
-              {"Get Test CAKE"}
+              <span className=" px-2 text-center text-[15px] text-gray-400">
+                Link to video demo{" "}
+                <Link
+                  className="bold text-blue-500"
+                  href="https://youtu.be/v-LHx_rA62s"
+                  referrerPolicy="no-referrer"
+                  target="_blank"
+                >
+                  here
+                </Link>
+              </span>
             </div>
           </div>
         )}
