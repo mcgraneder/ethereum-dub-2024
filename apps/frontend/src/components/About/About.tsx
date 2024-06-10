@@ -160,18 +160,67 @@ const About = () => {
           </HeaderContainer>
           <Title>What is The Eire Swap Protocol?</Title>
           <Text>
-            AstralBridge enables the simple wrapping of digital assets on
-            different blockchains. For example, AstralBridge allows users to
-            take <span>BTC</span> and put it on <a>Ethereum</a>, as an ERC-20
-            called aBTC.
+            EireSwap will be a Uniswap like Dex, but where users have their own
+            built-in smart wallet. The wallet utilises account abstraction
+            primitives as well as cryptographic protocols, for example Schnorr
+            Proof Of Knowledge, to take advantage of zero-knowledge (ZK) proofs
+            in smart contracts. This facilitates extension of modern Automated
+            Market Maker (AMM) protocols as utilised by Uniswap or Pancakeswap,
+            so that users can get the advantages resulting for AA, like batching
+            transactions and custom fee tokens. In this way, the typical swap
+            flow seen in today's AMMs can be optimised into a one-signature
+            flow. This is in addition to enabling one-signature cross chain
+            trades secured by our ZK protocol.
+            <br />
+            <br />
+            The main idea is to create a wallet contract that a user can own
+            which will have a deterministic address: a smart wallet. This smart
+            wallet acts a vessel, the means to execute their swap transactions
+            through a relayer. Since a user's wallet contract’s address is
+            deterministic, they can use it on any chain to execute any
+            transaction they want on these chains in one flow. We also extend
+            this to allow a user to create a unique private/public key pair for
+            their wallet contract. With this, the wallet can implement its own
+            ECDSA signature (for on-chain SC signing) and ZK proof algorithms.
+            The private key is derived in secret off-chain and the public key is
+            used as the salt in the deterministic CREATE2 smart contract
+            address. Thus the user’s Externally Owned Account (EOA), smart
+            contract wallet, and smart contract public key are all intrinsically
+            linked.
+            <br />
+            <br />A unique feature that this design makes possible is the
+            ability for the user to also execute cross chain swaps in a
+            one-signature flow. This works in a two step process under the hood.
+            There is both an origin chain transaction and a destination chain
+            transaction; both are executed for the user by the relayer as
+            components of a one-signature transaction flow.
           </Text>
           <Title>How does it work?</Title>
           <Text>
-            Using the astralAPI, a universal translator, it converts digital
-            assets to the format needed by its destination chain. For example,
-            astralAPI takes <span>BTC</span>, holds it, and then converts it to
-            an <a>ERC-20</a> with a 1:1 ratio to ensure your astralBTC is always
-            backed by the same amount of BTC. Find out more here ↗.
+            As an example, let us imagine the user has USDT on Ethereum Mainnet
+            and wants to swap it for WBNB on Binance’s BNB chain. Furthermore,
+            let us assume that the relayer has access to USDT liquidity on both
+            chains. In this cross chain flow, the user will build a batched
+            transaction where they send USDT to the relayer’s smart wallet on
+            Ethereum Mainnet. After this is done, the relayer will run a
+            verification protocol. The verification will assert that the
+            contract states are correct, meaning that the user’s USDT balance
+            has gone down by the amount they want to swap (plus fee) and that
+            the relayer's balance has gone up by the swap amount (plus fee).
+            Upon successful completion of this verification, the relayer will
+            execute the destination chain transaction themselves and send the
+            end WBNB from the relayer’s smart wallet to the user’s smart wallet
+            address on BNB.
+            <br />
+            <br />
+            In this flow the the relayer can be considered the source of
+            liquidity on all chains that cross chain swaps go through. USDT will
+            be a gateway asset that will be the source of liquidity on all
+            supported chains. The net relayer’s balance of USDT on all chains
+            remains constant here, but in a particular swap across two chains,
+            the funds that the relayer uses on the destination chain’s tx will
+            be balanced out by the funds they gain from the user on the origin
+            chain.
           </Text>
         </AboutPageContentsWrapper>
       </AboutPageContentsConainer>
